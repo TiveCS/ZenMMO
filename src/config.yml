@@ -1,0 +1,6 @@
+system:
+  exp-formula: '(%exp%+((%exp%*%level%)/3))/5'
+  additional-levelup-skillpoint: 3
+
+player-data:
+  max-skill-tree: 3
