@@ -13,14 +13,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
-public abstract class Skill {
+public abstract class Skill implements Cloneable {
 
     private ZenMMO plugin = ZenMMO.getPlugin(ZenMMO.class);
     public static HashMap<String, Skill> skills = new HashMap<>();
     private Placeholder plc = new Placeholder();
 
     private PlayerData playerData;
-    private double exp = 0;
     private int level = 0;
 
     private String path;
@@ -44,7 +43,7 @@ public abstract class Skill {
         loadPlaceholderAttribute(playerData);
         loadDefaultIconTemplate();
 
-        getIcon().setAmount(getLevel());
+        getIcon().setAmount(getLevel() > 0 ? getLevel() : 1);
     }
 
     public Skill(OfflinePlayer player){
@@ -67,6 +66,30 @@ public abstract class Skill {
     }
 
     // Base
+
+    public void getPlayerProfile(){
+
+    }
+
+    public Skill clone(){
+        Skill skill = null;
+        try {
+            skill = (Skill) super.clone();
+            skill.setConnectedTree(this.getConnectedTree());
+            skill.setMaxLevel(this.getMaxLevel());
+            skill.setName(this.getName());
+            skill.setDescription(this.getDescription());
+            skill.setAttribute(this.getAttribute());
+            skill.setCustomAttribute(this.getCustomAttribute());
+            skill.setPlayerData(this.getPlayerData());
+            skill.setLevel(this.getLevel());
+            skill.setPlaceholder(this.getPlaceholder());
+            skill.setIcon(this.getIcon());
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
+        return skill;
+    }
 
     public void getCreatorData(){
         for (Skill sk : skills.values()){
@@ -106,10 +129,23 @@ public abstract class Skill {
         }
     }
 
+    public void loadPlayerDefaultIconTemplate(){
+        loadPlaceholderAttribute();
+        ItemMeta meta = getIcon().getItemMeta();
+        meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', "&6" + getName() + " &7(Level " + getLevel() + " / " + getMaxLevel() + " )"));
+        List<String> lore = new ArrayList<>();
+        lore.add(" ");
+        lore.add("&e&lDESCRIPTION");
+        lore.addAll(getDescription());
+        lore = getPlaceholder().useMass(lore);
+        meta.setLore(DataConverter.colored(lore));
+        getIcon().setItemMeta(meta);
+    }
+
     public void loadDefaultIconTemplate(){
         loadPlaceholderAttribute();
         ItemMeta meta = getIcon().getItemMeta();
-        meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', "&e" + getName()));
+        meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', "&6" + getName()));
         List<String> lore = new ArrayList<>();
         lore.add(" ");
         lore.add("&fMax level of this skill &b" + getMaxLevel());
@@ -133,10 +169,6 @@ public abstract class Skill {
 
     }
 
-    public void setExp(double exp) {
-        this.exp = exp;
-    }
-
     public void setLevel(int level) {
         this.level = level;
     }
@@ -148,6 +180,9 @@ public abstract class Skill {
 
     // Creator action
 
+    public void setPlaceholder(Placeholder plc){
+        this.plc = plc;
+    }
 
     public void setConnectedTree(SkillTree connectedTree) {
         this.connectedTree = connectedTree;
@@ -189,10 +224,6 @@ public abstract class Skill {
 
     public PlayerData getPlayerData() {
         return playerData;
-    }
-
-    public double getExp() {
-        return exp;
     }
 
     public int getLevel() {

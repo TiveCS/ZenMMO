@@ -33,6 +33,14 @@ public class MainMenu extends UneditableMenu {
         MAIN, SKILL_TREE, SKILL;
     }
 
+    public MainMenu(PlayerData playerData){
+        super(6, "&2ZenMMO Main Menu");
+        this.pd = playerData;
+        this.target = playerData.getPlayer();
+        this.viewer = playerData.getPlayer().getPlayer();
+        loadTemplate();
+    }
+
     public MainMenu(OfflinePlayer target, Player viewer) {
         super(6, "&2ZenMMO Main Menu");
         if (!target.hasPlayedBefore() || target.getUniqueId() == null){
@@ -161,7 +169,15 @@ public class MainMenu extends UneditableMenu {
             for (int s = 2; s < 7; s++){
                 if (skills.size() > count) {
                     int slot = i * 9 + s;
-                    map.put(slot, skills.get(count).getIcon());
+                    Skill sk = skills.get(count);
+                    viewer.sendMessage(tree.toString());
+                    viewer.sendMessage(pd.getSkillTree().toString());
+                    if (pd.getSkillTree().containsKey(tree.getName())){
+                        pd.getSkillTree().get(tree.getName()).getSkills().get(sk.getName()).loadPlayerDefaultIconTemplate();
+                        map.put(slot,  pd.getSkillTree().get(tree.getName()).getSkills().get(sk.getName()).getIcon());
+                    }else {
+                        map.put(slot, sk.getIcon());
+                    }
                     count++;
                 }else{
                     break;
@@ -182,16 +198,20 @@ public class MainMenu extends UneditableMenu {
             for (int s = 2; s < 7; s++){
                 if (trees.size() > count) {
                     int slot = i * 9 + s;
-                    ItemStack icon = trees.get(count).getIcon();
-                    if (pd.getSkillTree().containsKey(trees.get(count))){
-                        ItemMeta meta = icon.getItemMeta();
-                        meta.addEnchant(Enchantment.KNOCKBACK, 1, true);
-                        //meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-                        icon.setItemMeta(meta);
-                    }else if (pd.getMaxSkillTree() - pd.getSkillTree().size() <= 0){
-                        icon.setType(Material.BARRIER);
+                    if (pd.getSkillTree().containsKey(trees.get(count))) {
+                        map.put(slot, pd.getSkillTree().get(trees.get(count)).getIcon());
+                    }else{
+                        ItemStack icon = trees.get(count).getIcon();
+                        if (pd.getSkillTree().containsKey(trees.get(count))) {
+                            ItemMeta meta = icon.getItemMeta();
+                            meta.addEnchant(Enchantment.KNOCKBACK, 1, true);
+                            meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
+                            icon.setItemMeta(meta);
+                        } else if (pd.getMaxSkillTree() - pd.getSkillTree().size() <= 0) {
+                            icon.setType(Material.BARRIER);
+                        }
+                        map.put(slot, icon);
                     }
-                    map.put(slot, icon);
                     count++;
                 }else{
                     break;
@@ -232,6 +252,7 @@ public class MainMenu extends UneditableMenu {
                         state = MainMenuState.SKILL;
                     }else if (event.getClick().isRightClick()){
                         pd.chooseSkillTree(st);
+                        loadSkillTree();
                     }
                     break;
                 }

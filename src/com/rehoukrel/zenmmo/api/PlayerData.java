@@ -1,6 +1,7 @@
 package com.rehoukrel.zenmmo.api;
 
 import com.rehoukrel.zenmmo.ZenMMO;
+import com.rehoukrel.zenmmo.menu.MainMenu;
 import com.rehoukrel.zenmmo.utils.ConfigManager;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
@@ -21,6 +22,7 @@ public class PlayerData {
     private HashMap<String, SkillTree> skillTree = new HashMap<>();
     private HashMap<String, Object> rawData = new HashMap<>();
     private int maxSkillTree = 0;
+    private MainMenu mm;
 
     public PlayerData(OfflinePlayer player){
         if (!player.hasPlayedBefore()){
@@ -35,9 +37,22 @@ public class PlayerData {
 
         initializeDefaultData();
         loadData();
+
+        if (getPlayer().isOnline()) {
+            this.mm = new MainMenu(this);
+        }
     }
 
     // Action
+
+    public void openMenu(){
+        if (getPlayer().isOnline()) {
+            if (this.mm == null){
+                this.mm = new MainMenu(this);
+            }
+            getMainMenu().open(getPlayer().getPlayer());
+        }
+    }
 
     public void chooseSkillTree(SkillTree tree){
         List<String> st = new ArrayList<>();
@@ -78,7 +93,7 @@ public class PlayerData {
         }
         getSkillTree().clear();
         for (String path : getConfigManager().getConfig().getStringList("player-data.skill-tree")){
-            getSkillTree().put(path, SkillTree.skillTree.get(path));
+            getSkillTree().put(path, SkillTree.skillTree.get(path).getPlayerProfile(this));
         }
 
         maxSkillTree = Integer.parseInt(getRawData().get("max-skill-tree").toString());
@@ -90,7 +105,8 @@ public class PlayerData {
             String path = "skill-tree." + tree.getName();
             getConfigManager().init(path + ".level", 1);
             getConfigManager().init(path + ".exp", 0);
-            getConfigManager().init(path + ".skill." + sk.getName(), 1);
+            getConfigManager().init(path + ".skill-point", 1);
+            getConfigManager().init(path + ".skill." + sk.getName(), 0);
         }
         getConfigManager().saveConfig();
     }
@@ -117,6 +133,10 @@ public class PlayerData {
     }
 
     // Getter
+
+    public MainMenu getMainMenu(){
+        return mm;
+    }
 
 
     public HashMap<String, Object> getRawData() {

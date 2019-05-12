@@ -9,6 +9,8 @@ import org.bukkit.plugin.java.JavaPlugin;
 
 public class ZenMMO extends JavaPlugin {
 
+    int minExp = 0, maxExp = 0;
+
     @Override
     public void onEnable(){
         loadConfig();
@@ -20,8 +22,6 @@ public class ZenMMO extends JavaPlugin {
 
     public void loadSkillTree(){
         SkillTree.register(new Resource());
-
-
     }
 
     private void loadSoftDepend(){
@@ -39,6 +39,9 @@ public class ZenMMO extends JavaPlugin {
     public void loadConfig(){
         getConfig().options().copyDefaults(true);
         saveConfig();
+
+        minExp = getConfig().getInt("system.exp-min");
+        maxExp = getConfig().getInt("system.exp-max");
     }
 
 }
