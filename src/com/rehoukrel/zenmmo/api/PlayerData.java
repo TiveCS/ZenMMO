@@ -93,7 +93,8 @@ public class PlayerData {
         }
         getSkillTree().clear();
         for (String path : getConfigManager().getConfig().getStringList("player-data.skill-tree")){
-            getSkillTree().put(path, SkillTree.skillTree.get(path).getPlayerProfile(this));
+            SkillTree tree  = SkillTree.skillTree.get(path).getPlayerProfile(this);
+            getSkillTree().put(path, tree);
         }
 
         maxSkillTree = Integer.parseInt(getRawData().get("max-skill-tree").toString());

@@ -28,6 +28,7 @@ public class MainMenu extends UneditableMenu {
     private Player viewer;
     private MainMenuState state = MainMenuState.MAIN;
     private List<SkillTree> trees = new ArrayList<>(SkillTree.skillTree.values());
+    private HashMap<String, Object> temp = new HashMap<>();
 
     public enum MainMenuState{
         MAIN, SKILL_TREE, SKILL;
@@ -150,6 +151,7 @@ public class MainMenu extends UneditableMenu {
     }
 
     public void clearContent(){
+        temp.clear();
         for (int i = 1; i < 5; i++){
             for (int s = 2; s < 7;s++){
                 int slot = i*9 + s;
@@ -165,16 +167,15 @@ public class MainMenu extends UneditableMenu {
         List<Skill> skills = new ArrayList<>(tree.getSkills().values());
         int size = 5*4;
         int count = (size*getPage() - (size));
+
         for (int i = 1; i < 5; i++){
             for (int s = 2; s < 7; s++){
                 if (skills.size() > count) {
                     int slot = i * 9 + s;
                     Skill sk = skills.get(count);
-                    viewer.sendMessage(tree.toString());
-                    viewer.sendMessage(pd.getSkillTree().toString());
                     if (pd.getSkillTree().containsKey(tree.getName())){
                         pd.getSkillTree().get(tree.getName()).getSkills().get(sk.getName()).loadPlayerDefaultIconTemplate();
-                        map.put(slot,  pd.getSkillTree().get(tree.getName()).getSkills().get(sk.getName()).getIcon());
+                        map.put(slot, pd.getSkillTree().get(tree.getName()).getSkills().get(sk.getName()).getIcon());
                     }else {
                         map.put(slot, sk.getIcon());
                     }
@@ -184,6 +185,8 @@ public class MainMenu extends UneditableMenu {
                 }
             }
         }
+        temp.put("skilltree", tree);
+        state = MainMenuState.SKILL;
         addInventoryData(1, map);
         open(viewer);
     }
@@ -199,7 +202,9 @@ public class MainMenu extends UneditableMenu {
                 if (trees.size() > count) {
                     int slot = i * 9 + s;
                     if (pd.getSkillTree().containsKey(trees.get(count))) {
-                        map.put(slot, pd.getSkillTree().get(trees.get(count)).getIcon());
+                        SkillTree st = pd.getSkillTree().get(trees.get(count));
+                        st.loadIconWithPlayer();
+                        map.put(slot, st.getIcon());
                     }else{
                         ItemStack icon = trees.get(count).getIcon();
                         if (pd.getSkillTree().containsKey(trees.get(count))) {
@@ -257,6 +262,50 @@ public class MainMenu extends UneditableMenu {
                     break;
                 }
             }
+        }else if (state.equals(MainMenuState.SKILL) && temp.containsKey("skilltree")){
+            SkillTree tree = (SkillTree) temp.get("skilltree");
+            if (!getViewer().getName().equals(getPlayerData().getPlayer().getName())){
+                return;
+            }
+            for (Skill sk : tree.getSkills().values()){
+                if (item.isSimilar(sk.getIcon())){
+                    SkillTree playerTree = getPlayerData().getSkillTree().get(tree.getName());
+                    Skill playerSkill = playerTree.getSkills().get(sk.getName());
+                    if (playerTree.getSkillPoint() > 0){
+                        if (playerSkill.getLevel() < playerSkill.getMaxLevel()) {
+                            getViewer().sendMessage("Skill " + playerSkill.getName() + " on tree " + playerTree.getName() + " has been level up");
+                            getViewer().sendMessage("Level: " + playerSkill.getLevel() + ", Max: " + playerSkill.getMaxLevel() + ", Pd: " + playerSkill.getPlayerData());
+                            playerTree.addSkillPoint(-1);
+                            playerSkill.setLevel(playerSkill.getLevel() + 1);
+                            getPlayerData().getConfigManager().input("skill-tree." + playerTree.getName() + ".skill-point", playerTree.getSkillPoint());
+                            getPlayerData().getConfigManager().input(playerSkill.getAutoPath(), playerSkill.getLevel());
+                            getPlayerData().getConfigManager().saveConfig();
+                            loadSkill(playerTree);
+                        }else{
+                            getViewer().sendMessage("Max level has been reached for skill " + playerSkill.getName());
+                        }
+                    }else{
+                        getViewer().sendMessage("Skill " + playerSkill.getName() + " need more skill point");
+                    }
+                    return;
+                }
+            }
         }
+    }
+
+    public void setViewer(Player viewer) {
+        this.viewer = viewer;
+    }
+
+    public Player getViewer() {
+        return viewer;
+    }
+
+    public PlayerData getPlayerData() {
+        return pd;
+    }
+
+    public OfflinePlayer getTarget() {
+        return target;
     }
 }

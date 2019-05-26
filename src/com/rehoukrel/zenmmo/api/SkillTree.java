@@ -3,13 +3,12 @@ package com.rehoukrel.zenmmo.api;
 import com.rehoukrel.zenmmo.ZenMMO;
 import com.rehoukrel.zenmmo.utils.ConfigManager;
 import com.rehoukrel.zenmmo.utils.DataConverter;
-import com.rehoukrel.zenmmo.utils.MessageManager;
 import com.rehoukrel.zenmmo.utils.language.Placeholder;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.Sound;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
@@ -20,7 +19,6 @@ import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
-import javax.xml.crypto.Data;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -174,13 +172,31 @@ public abstract class SkillTree implements Cloneable {
     }
 
     public SkillTree getPlayerProfile(PlayerData playerData){
-        SkillTree str = this.clone();
+        SkillTree str = null;
+        try {
+            str = (SkillTree) super.clone();
+            str.name = this.getName();
+            str.description = this.getDescription();
+            str.icon = this.getIcon();
+            str.file = this.getFile();
+            str.configManager = this.getConfigManager();
+            HashMap<String, Skill> sks = new HashMap<>();
+            for (String s : this.getSkills().keySet()){
+                sks.put(s, this.getSkills().get(s).getPlayerProfile(playerData));
+            }
+            str.setSkills(sks);
+
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
+
         String pt = "skill-tree." + str.getName();
         str.setPlayerData(playerData);
         str.setLevel(playerData.getConfigManager().getConfig().getInt(pt + ".level"));
         str.setExp(playerData.getConfigManager().getConfig().getInt(pt + ".exp"));
         str.setSkillPoint(playerData.getConfigManager().getConfig().getInt(pt + ".skill-point"));
         str.loadIconWithPlayer();
+
         return str;
     }
 
@@ -194,9 +210,8 @@ public abstract class SkillTree implements Cloneable {
             str.file = this.getFile();
             str.configManager = this.getConfigManager();
             str.skills = this.getSkills();
-            for (String s : str.getSkills().keySet()){
-                str.getSkills().put(s, str.getSkills().get(s).clone());
-            }
+            str.setPlayerData(this.getPlayerData());
+
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
         }
@@ -282,6 +297,11 @@ public abstract class SkillTree implements Cloneable {
     }
 
     // Setter
+
+
+    public void setSkills(HashMap<String, Skill> skills) {
+        this.skills = skills;
+    }
 
     public void setExp(int exp) {
         this.exp = exp;

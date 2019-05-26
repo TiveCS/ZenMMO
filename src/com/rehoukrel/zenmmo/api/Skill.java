@@ -3,6 +3,7 @@ package com.rehoukrel.zenmmo.api;
 import com.rehoukrel.zenmmo.ZenMMO;
 import com.rehoukrel.zenmmo.utils.DataConverter;
 import com.rehoukrel.zenmmo.utils.language.Placeholder;
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
@@ -67,23 +68,46 @@ public abstract class Skill implements Cloneable {
 
     // Base
 
-    public void getPlayerProfile(){
+    public Skill getPlayerProfile(PlayerData pd){
+        Skill skill = null;
+        try {
+            skill = (Skill) super.clone();
+            skill.connectedTree = this.getConnectedTree();
+            skill.maxLevel = this.getMaxLevel();
+            skill.name = this.getName();
+            skill.description = this.getDescription();
+            skill.attribute = this.getAttribute();
+            skill.customAttribute = this.getCustomAttribute();
 
+        } catch (CloneNotSupportedException e) {
+            e.printStackTrace();
+        }
+        skill.setPlayerData(pd);
+        skill.setLevel(pd.getConfigManager().getConfig().getInt("skill-tree." + this.getConnectedTree().getName() + ".skill." + skill.getName()));
+
+        skill.setPlaceholder(new Placeholder());
+        skill.loadPlaceholderAttribute(pd);
+
+        skill.setIcon(this.icon);
+        skill.loadPlayerDefaultIconTemplate();
+
+        return skill;
     }
 
     public Skill clone(){
         Skill skill = null;
         try {
             skill = (Skill) super.clone();
-            skill.setConnectedTree(this.getConnectedTree());
-            skill.setMaxLevel(this.getMaxLevel());
-            skill.setName(this.getName());
-            skill.setDescription(this.getDescription());
-            skill.setAttribute(this.getAttribute());
-            skill.setCustomAttribute(this.getCustomAttribute());
+            skill.connectedTree = this.getConnectedTree();
+            skill.maxLevel = this.getMaxLevel();
+            skill.name = this.getName();
+            skill.description = this.getDescription();
+            skill.attribute = this.getAttribute();
+            skill.customAttribute = this.getCustomAttribute();
+
+            skill.setPlaceholder(this.getPlaceholder());
             skill.setPlayerData(this.getPlayerData());
             skill.setLevel(this.getLevel());
-            skill.setPlaceholder(this.getPlaceholder());
             skill.setIcon(this.getIcon());
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
@@ -158,6 +182,14 @@ public abstract class Skill implements Cloneable {
     }
 
     // Player action
+
+    public void levelupTo(int newlevel){
+        setLevel(newlevel);
+    }
+
+    public void levelup(){
+        levelupTo(getLevel() + 1);
+    }
 
     // Load attribute from player's file
     public void loadCustomAttribute(){
@@ -263,6 +295,10 @@ public abstract class Skill implements Cloneable {
 
     public String getPath() {
         return path;
+    }
+
+    public String getAutoPath(){
+        return "skill-tree." + getConnectedTree().getName() + ".skill." + getName();
     }
 
     public Placeholder getPlaceholder(){

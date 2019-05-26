@@ -2,8 +2,10 @@ package com.rehoukrel.zenmmo.cmd;
 
 import com.rehoukrel.zenmmo.ZenMMO;
 import com.rehoukrel.zenmmo.api.PlayerData;
+import com.rehoukrel.zenmmo.api.Skill;
 import com.rehoukrel.zenmmo.api.SkillTree;
 import com.rehoukrel.zenmmo.menu.MainMenu;
+import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -26,6 +28,15 @@ public class CmdZenMMO implements CommandExecutor {
                     return true;
                 }
                 if (strings.length == 2){
+                    if (strings[0].equalsIgnoreCase("other")){
+                        if (strings[1].length() > 0){
+                            Player op = Bukkit.getPlayer(strings[1]);
+                            PlayerData pd = new PlayerData(op);
+                            pd.getMainMenu().setViewer(p);
+                            pd.getMainMenu().open(p);
+                            return true;
+                        }
+                    }
                     if (strings[0].equalsIgnoreCase("stats")){
                         PlayerData pd = new PlayerData(p);
                         if (pd.getSkillTree().containsKey(strings[1])){

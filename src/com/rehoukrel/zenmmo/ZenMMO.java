@@ -1,7 +1,7 @@
 package com.rehoukrel.zenmmo;
 
-import com.rehoukrel.zenmmo.api.Skill;
 import com.rehoukrel.zenmmo.api.SkillTree;
+import com.rehoukrel.zenmmo.api.skilltree.Combat;
 import com.rehoukrel.zenmmo.api.skilltree.Resource;
 import com.rehoukrel.zenmmo.cmd.CmdZenMMO;
 import com.rehoukrel.zenmmo.event.BasicEvent;
@@ -21,7 +21,7 @@ public class ZenMMO extends JavaPlugin {
     }
 
     public void loadSkillTree(){
-        SkillTree.register(new Resource());
+        SkillTree.register(new Resource(), new Combat());
     }
 
     private void loadSoftDepend(){
