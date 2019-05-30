@@ -158,6 +158,11 @@ public class MainMenu extends UneditableMenu {
                 getMenu().setItem(slot, new ItemStack(Material.AIR));
             }
         }
+        for (int i : getInventoryData().keySet()){
+            if (i != 0){
+                getInventoryData().remove(i);
+            }
+        }
     }
 
     public void loadSkill(SkillTree tree){
@@ -201,18 +206,14 @@ public class MainMenu extends UneditableMenu {
             for (int s = 2; s < 7; s++){
                 if (trees.size() > count) {
                     int slot = i * 9 + s;
-                    if (pd.getSkillTree().containsKey(trees.get(count))) {
-                        SkillTree st = pd.getSkillTree().get(trees.get(count));
+                    if (pd.getSkillTree().containsKey(trees.get(count).getName())) {
+                        SkillTree st = pd.getSkillTree().get(trees.get(count).getName());
                         st.loadIconWithPlayer();
-                        map.put(slot, st.getIcon());
+                        ItemStack icon = st.getIcon().clone();
+                        map.put(slot, icon);
                     }else{
-                        ItemStack icon = trees.get(count).getIcon();
-                        if (pd.getSkillTree().containsKey(trees.get(count))) {
-                            ItemMeta meta = icon.getItemMeta();
-                            meta.addEnchant(Enchantment.KNOCKBACK, 1, true);
-                            meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
-                            icon.setItemMeta(meta);
-                        } else if (pd.getMaxSkillTree() - pd.getSkillTree().size() <= 0) {
+                        ItemStack icon = trees.get(count).getIcon().clone();
+                        if (pd.getMaxSkillTree() - pd.getSkillTree().size() <= 0) {
                             icon.setType(Material.BARRIER);
                         }
                         map.put(slot, icon);
@@ -223,6 +224,7 @@ public class MainMenu extends UneditableMenu {
                 }
             }
         }
+
         addInventoryData(getPage(), map);
         open(viewer);
         state = MainMenuState.SKILL_TREE;
@@ -250,7 +252,7 @@ public class MainMenu extends UneditableMenu {
 
         //------------------------------------------------
         else if (state.equals(MainMenuState.SKILL_TREE)){
-            for (SkillTree st : trees){
+            for (SkillTree st : pd.getSkillTree().values()){
                 if (st.getIcon().equals(item)){
                     if (event.getClick().isLeftClick()) {
                         loadSkill(st);
@@ -274,7 +276,6 @@ public class MainMenu extends UneditableMenu {
                     if (playerTree.getSkillPoint() > 0){
                         if (playerSkill.getLevel() < playerSkill.getMaxLevel()) {
                             getViewer().sendMessage("Skill " + playerSkill.getName() + " on tree " + playerTree.getName() + " has been level up");
-                            getViewer().sendMessage("Level: " + playerSkill.getLevel() + ", Max: " + playerSkill.getMaxLevel() + ", Pd: " + playerSkill.getPlayerData());
                             playerTree.addSkillPoint(-1);
                             playerSkill.setLevel(playerSkill.getLevel() + 1);
                             getPlayerData().getConfigManager().input("skill-tree." + playerTree.getName() + ".skill-point", playerTree.getSkillPoint());

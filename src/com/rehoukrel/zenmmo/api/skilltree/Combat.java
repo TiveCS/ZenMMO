@@ -17,6 +17,9 @@ public class Combat extends SkillTree {
     public Combat() {
         super("Combat", Material.IRON_SWORD, Arrays.asList("&fExtends your battle mechanic", "&fand effect while in combat!"));
 
+        setUseIncrement(true);
+        setSkillPointIncrement(1);
+
         addSkill(new Sword(), new Archery(), new MartialArt());
         loadIcon();
     }

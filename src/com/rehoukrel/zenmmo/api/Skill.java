@@ -27,7 +27,7 @@ public abstract class Skill implements Cloneable {
     private String name;
     private int maxLevel = 15;
     private ItemStack icon;
-    private List<String> description = new ArrayList<>();
+    private List<String> description = new ArrayList<>(), rawDescription = new ArrayList<>();
     private SkillTree connectedTree;
     private HashMap<String, Double> attribute = new HashMap<>();
     private HashMap<String, Object> customAttribute = new HashMap<>();
@@ -60,6 +60,7 @@ public abstract class Skill implements Cloneable {
         this.name = name;
         this.icon = icon;
         this.description = description;
+        this.rawDescription = description;
         this.maxLevel = maxLevel;
         this.path = "skills." + name;
 
@@ -76,6 +77,7 @@ public abstract class Skill implements Cloneable {
             skill.maxLevel = this.getMaxLevel();
             skill.name = this.getName();
             skill.description = this.getDescription();
+            skill.rawDescription = this.rawDescription;
             skill.attribute = this.getAttribute();
             skill.customAttribute = this.getCustomAttribute();
 
@@ -88,7 +90,7 @@ public abstract class Skill implements Cloneable {
         skill.setPlaceholder(new Placeholder());
         skill.loadPlaceholderAttribute(pd);
 
-        skill.setIcon(this.icon);
+        skill.setIcon(this.icon.clone());
         skill.loadPlayerDefaultIconTemplate();
 
         return skill;
@@ -102,13 +104,14 @@ public abstract class Skill implements Cloneable {
             skill.maxLevel = this.getMaxLevel();
             skill.name = this.getName();
             skill.description = this.getDescription();
+            skill.rawDescription = this.rawDescription;
             skill.attribute = this.getAttribute();
             skill.customAttribute = this.getCustomAttribute();
 
             skill.setPlaceholder(this.getPlaceholder());
             skill.setPlayerData(this.getPlayerData());
             skill.setLevel(this.getLevel());
-            skill.setIcon(this.getIcon());
+            skill.setIcon(this.getIcon().clone());
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
         }
@@ -128,12 +131,18 @@ public abstract class Skill implements Cloneable {
     }
 
     public void loadPlaceholderAttribute(PlayerData pd){
+        getPlaceholder().addReplacer("level", getLevel() + "");
+        getPlaceholder().addReplacer(getName() + "_level", getLevel() + "");
+        getPlaceholder().addReplacer(getName() + "_maxlevel", getMaxLevel() + "");
+        getPlaceholder().addReplacer("player", pd.getPlayer().getName());
+        getPlaceholder().addReplacer("uuid", pd.getPlayer().getUniqueId().toString());
+
         for (String tree : pd.getConfigManager().getConfig().getConfigurationSection("skill-tree").getKeys(false)){
-            getPlaceholder().addReplacer(("skill_" + tree + "_level").toLowerCase(), pd.getConfigManager().get("skill-tree." + tree + ".level").toString());
-            getPlaceholder().addReplacer(("skill_" + tree + "_exp").toLowerCase(), pd.getConfigManager().get("skill-tree." + tree + ".exp").toString());
+            getPlaceholder().addReplacer(("skilltree_" + tree + "_level").toLowerCase(), pd.getConfigManager().get("skill-tree." + tree + ".level").toString());
+            getPlaceholder().addReplacer(("skilltree_" + tree + "_exp").toLowerCase(), pd.getConfigManager().get("skill-tree." + tree + ".exp").toString());
             for (String skill : pd.getConfigManager().getConfig().getConfigurationSection("skill-tree." + tree).getKeys(false)){
                 String path = "skill-tree." + tree + "." + skill;
-                getPlaceholder().addReplacer(("skill_" + tree + "_" + skill).toLowerCase(), pd.getConfigManager().get(path).toString());
+                getPlaceholder().addReplacer(("skilltree_" + tree + "_" + skill).toLowerCase(), pd.getConfigManager().get(path).toString());
             }
         }
         for (String s : skills.get(getName()).getAttribute().keySet()){
@@ -154,6 +163,7 @@ public abstract class Skill implements Cloneable {
     }
 
     public void loadPlayerDefaultIconTemplate(){
+        setDescription(rawDescription);
         loadPlaceholderAttribute();
         ItemMeta meta = getIcon().getItemMeta();
         meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', "&6" + getName() + " &7(Level " + getLevel() + " / " + getMaxLevel() + " )"));
@@ -162,6 +172,9 @@ public abstract class Skill implements Cloneable {
         lore.add("&e&lDESCRIPTION");
         lore.addAll(getDescription());
         lore = getPlaceholder().useMass(lore);
+        for (int i = 0; i < lore.size(); i++){
+            lore.set(i, DataConverter.calculateString(lore.get(i), 1));
+        }
         meta.setLore(DataConverter.colored(lore));
         getIcon().setItemMeta(meta);
     }

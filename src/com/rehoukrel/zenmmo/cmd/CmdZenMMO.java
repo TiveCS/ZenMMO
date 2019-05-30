@@ -17,6 +17,7 @@ public class CmdZenMMO implements CommandExecutor {
     private ZenMMO plugin = ZenMMO.getPlugin(ZenMMO.class);
 
 
+    @SuppressWarnings("deprecation")
     @Override
     public boolean onCommand(CommandSender commandSender, Command command, String s, String[] strings) {
         if (command.getName().equals("zenmmo")){
@@ -27,14 +28,28 @@ public class CmdZenMMO implements CommandExecutor {
                     pd.openMenu();
                     return true;
                 }
-                if (strings.length == 2){
+                if (strings.length >= 2){
                     if (strings[0].equalsIgnoreCase("other")){
-                        if (strings[1].length() > 0){
-                            Player op = Bukkit.getPlayer(strings[1]);
+                        if (strings[1].length() > 0 && strings.length == 2){
+                            OfflinePlayer op = Bukkit.getOfflinePlayer(strings[1]);
                             PlayerData pd = new PlayerData(op);
+                            pd.openMenu(p);
                             pd.getMainMenu().setViewer(p);
-                            pd.getMainMenu().open(p);
+                            for (SkillTree tree : pd.getSkillTree().values()){
+                                p.sendMessage(tree.getLevel() + " " + tree.getName());
+                            }
                             return true;
+                        }
+                        if (strings.length == 4){
+                            if (p.hasPermission("admin")) {
+                                if (strings[2].equalsIgnoreCase("skilltree")) {
+                                    OfflinePlayer op = Bukkit.getOfflinePlayer(strings[1]);
+                                    PlayerData popd = new PlayerData(op);
+                                    SkillTree tree = SkillTree.skillTree.get(strings[3]);
+                                    popd.chooseSkillTree(tree);
+                                    return true;
+                                }
+                            }
                         }
                     }
                     if (strings[0].equalsIgnoreCase("stats")){

@@ -5,6 +5,7 @@ import com.rehoukrel.zenmmo.menu.MainMenu;
 import com.rehoukrel.zenmmo.utils.ConfigManager;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.Player;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -52,6 +53,13 @@ public class PlayerData {
             }
             getMainMenu().open(getPlayer().getPlayer());
         }
+    }
+
+    public void openMenu(Player p){
+        if (this.mm == null){
+            this.mm = new MainMenu(this, p);
+        }
+        getMainMenu().open(p);
     }
 
     public void chooseSkillTree(SkillTree tree){

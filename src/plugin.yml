@@ -2,11 +2,12 @@ name: ZenMMO
 authors: [TiveCS, Rehoukrel_Studio]
 main: com.rehoukrel.zenmmo.ZenMMO
 version: 1.0
-description: Make your server feel new MMO
+description: Make your server feel new MMO system
 softdepend:
   - Vault
   - MonoItem
   - MythicMobs
+  - Essentials
 commands:
   zenmmo:
     description: Open main menu of ZenMMO

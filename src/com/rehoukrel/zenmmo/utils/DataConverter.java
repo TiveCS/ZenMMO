@@ -10,6 +10,7 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
+import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Sound;
@@ -69,13 +70,35 @@ public class DataConverter {
 		try {
 			result = Integer.parseInt(se.eval(text).toString());
 		} catch (NumberFormatException e) {
-			e.printStackTrace();
+
 		} catch (ScriptException e) {
-			e.printStackTrace();
+
 		}
 		return result;
 	}
-	
+
+	// Require calc(expression)
+	public static String calculateString(String t, int formatLength){
+		ScriptEngineManager sem = new ScriptEngineManager();
+		ScriptEngine se = sem.getEngineByName("JavaScript");
+		try {
+			if (t.contains("calc(")) {
+				StringBuilder b = new StringBuilder(t);
+				int s, e, c = "calc(".length();
+				s = b.indexOf("calc(");
+				e = b.indexOf(")", s);
+				String num = b.substring((s + c), e);
+				b.delete(s, e + 1);
+				num = returnDecimalFormated(formatLength, Double.parseDouble(se.eval(num).toString()));
+				b.insert(s, num);
+				return b.toString();
+			}else{
+				return t;
+			}
+		} catch (ScriptException e) {
+			return t;
+		}
+	}
 	
 	public static double convertStringToDouble(String text) {
 		ScriptEngineManager sem = new ScriptEngineManager();
@@ -85,9 +108,9 @@ public class DataConverter {
 		try {
 			result = Double.parseDouble(se.eval(text).toString());
 		} catch (NumberFormatException e) {
-			e.printStackTrace();
+
 		} catch (ScriptException e) {
-			e.printStackTrace();
+
 		}
 		return result;
 	}

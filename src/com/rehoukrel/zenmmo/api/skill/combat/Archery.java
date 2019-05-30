@@ -7,7 +7,9 @@ import java.util.Arrays;
 
 public class Archery extends Skill {
     public Archery() {
-        super("Archery", XMaterial.BOW.parseMaterial(), Arrays.asList(""), 20);
+        super("Archery", XMaterial.BOW.parseMaterial(),
+                Arrays.asList("&7- Increase shoot power [calc(%archery_attribute_power%*%level%)%]"
+                ,"&7- Chance to apply Headache [calc(%archery_attribute_headache%*%level%)%]"), 20);
 
         addAttribute("power", 5); // Increase
         addAttribute("headache", 2); // Chance

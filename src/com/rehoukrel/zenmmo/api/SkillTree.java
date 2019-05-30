@@ -37,6 +37,8 @@ public abstract class SkillTree implements Cloneable {
     private int level, exp, skillPoint = 0;
     private PlayerData playerData;
 
+    private boolean useIncrement = false;
+    private int skillPointIncrement = 2;
     private File file;
     private ConfigManager configManager;
     private String name;
@@ -122,7 +124,11 @@ public abstract class SkillTree implements Cloneable {
     }
 
     public void addSkillPoint(){
-        addSkillPoint(addSp);
+        if (isUseIncrement()){
+            addSkillPoint(getSkillPointIncrement());
+        }else {
+            addSkillPoint(addSp);
+        }
     }
 
     public void addSkillPoint(int sp){
@@ -177,7 +183,7 @@ public abstract class SkillTree implements Cloneable {
             str = (SkillTree) super.clone();
             str.name = this.getName();
             str.description = this.getDescription();
-            str.icon = this.getIcon();
+            str.icon = this.getIcon().clone();
             str.file = this.getFile();
             str.configManager = this.getConfigManager();
             HashMap<String, Skill> sks = new HashMap<>();
@@ -281,23 +287,41 @@ public abstract class SkillTree implements Cloneable {
     public void addSkill(Skill... skills){
         for (Skill s : skills){
             this.skills.put(s.getName(), s);
+            s.setConnectedTree(this);
+            Skill.skills.put(s.getName(), s);
+
             String path = "skills." + s.getName();
             getConfigManager().init(path + ".max-level", s.getMaxLevel());
             getConfigManager().init(path + ".description", s.getDescription());
+
             for (String a : s.getAttribute().keySet()) {
-                getConfigManager().input(path + ".attribute." + a, s.getAttribute().get(a));
+                getConfigManager().init(path + ".attribute." + a, s.getAttribute().get(a));
             }
             for (String a : s.getCustomAttribute().keySet()) {
-                getConfigManager().input(path + ".custom-attribute." + a, s.getCustomAttribute().get(a));
+                getConfigManager().init(path + ".custom-attribute." + a, s.getCustomAttribute().get(a));
             }
-            s.setConnectedTree(this);
-            Skill.skills.put(s.getName(), s);
         }
         getConfigManager().saveConfig();
+
+        for (Skill s : skills){
+            String path = "skills." + s.getName();
+            s.setMaxLevel(getConfigManager().getConfig().getInt(path + ".max-level"));
+            s.setDescription(getConfigManager().getConfig().getStringList(path + ".description"));
+
+            for (String a : s.getAttribute().keySet()) {
+                s.getAttribute().put(a, getConfigManager().getConfig().getDouble(path + ".attribute." + a));
+            }
+            for (String a : s.getCustomAttribute().keySet()) {
+                s.getCustomAttribute().put(a, getConfigManager().getConfig().get(path + ".custom-attribute." + a));
+            }
+        }
     }
 
     // Setter
 
+    public void setSkillPointIncrement(int skillPointIncrement) {
+        this.skillPointIncrement = skillPointIncrement;
+    }
 
     public void setSkills(HashMap<String, Skill> skills) {
         this.skills = skills;
@@ -323,7 +347,16 @@ public abstract class SkillTree implements Cloneable {
         this.description = description;
     }
 
+    public void setUseIncrement(boolean useIncrement) {
+        this.useIncrement = useIncrement;
+    }
+
     // Getter
+
+
+    public int getSkillPointIncrement() {
+        return skillPointIncrement;
+    }
 
     public List<String> getDescription() {
         return description;
@@ -367,6 +400,10 @@ public abstract class SkillTree implements Cloneable {
 
     public int getLevel() {
         return level;
+    }
+
+    public boolean isUseIncrement() {
+        return useIncrement;
     }
 
     public double getPercentage(){
