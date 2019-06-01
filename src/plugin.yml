@@ -1,6 +1,7 @@
 name: ZenMMO
 authors: [TiveCS, Rehoukrel_Studio]
 main: com.rehoukrel.zenmmo.ZenMMO
+api-version: 1.13
 version: 1.0
 description: Make your server feel new MMO system
 softdepend:

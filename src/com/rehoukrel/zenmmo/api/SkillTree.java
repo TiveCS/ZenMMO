@@ -1,8 +1,10 @@
 package com.rehoukrel.zenmmo.api;
 
 import com.rehoukrel.zenmmo.ZenMMO;
+import com.rehoukrel.zenmmo.event.BasicEvent;
 import com.rehoukrel.zenmmo.utils.ConfigManager;
 import com.rehoukrel.zenmmo.utils.DataConverter;
+import com.rehoukrel.zenmmo.utils.XMaterial;
 import com.rehoukrel.zenmmo.utils.language.Placeholder;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
@@ -81,6 +83,20 @@ public abstract class SkillTree implements Cloneable {
 
     //------------------------------------------------
 
+    public void startCooldown(){
+        startCooldown(30);
+    }
+
+    public void startCooldown(int cd){
+        BasicEvent.cooldown.add(getPlayerData().getPlayer().getPlayer());
+        Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, new Runnable() {
+            @Override
+            public void run() {
+                BasicEvent.cooldown.remove(getPlayerData().getPlayer().getPlayer());
+            }
+        }, cd);
+    }
+
     public void showProgress(Player p){
 
         String o = format;
@@ -98,17 +114,13 @@ public abstract class SkillTree implements Cloneable {
         p.spigot().sendMessage(ChatMessageType.ACTION_BAR, com);
     }
 
-    public int generateExp(){
-        int v = 0;
-        return v;
-    }
-
     public void addExp(){
         int min = plugin.getConfig().getInt("system.exp-min"), max = plugin.getConfig().getInt("system.exp-max");
         int r = new Random().nextInt(max);
         if (r < min){
             r = min;
         }
+        startCooldown();
         addExp(r);
     }
 

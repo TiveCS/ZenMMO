@@ -2,6 +2,12 @@ package com.rehoukrel.zenmmo.api.skill.combat;
 
 import com.rehoukrel.zenmmo.api.Skill;
 import com.rehoukrel.zenmmo.utils.XMaterial;
+import org.bukkit.Particle;
+import org.bukkit.Sound;
+import org.bukkit.entity.LivingEntity;
+import org.bukkit.potion.PotionEffect;
+import org.bukkit.potion.PotionEffectType;
+import org.bukkit.util.Vector;
 
 import java.util.Arrays;
 
@@ -20,5 +26,18 @@ public class MartialArt extends Skill {
 
         loadPlaceholderAttribute();
         loadDefaultIconTemplate();
+    }
+
+    public void chop(LivingEntity attacker, LivingEntity victim){
+        victim.addPotionEffect(new PotionEffect(PotionEffectType.WEAKNESS, 60, 1), true);
+        victim.getWorld().playSound(victim.getLocation(), Sound.ENTITY_PLAYER_ATTACK_SWEEP, 1,2);
+        victim.getWorld().spawnParticle(Particle.CRIT, victim.getLocation(), 5);
+    }
+
+    public void ironPunch(LivingEntity attacker, LivingEntity victim){
+        Vector dir = attacker.getEyeLocation().getDirection();
+        victim.setVelocity(dir);
+        victim.getWorld().playSound(victim.getLocation(), Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 1,1);
+        victim.getWorld().spawnParticle(Particle.EXPLOSION_LARGE, victim.getLocation(), 1);
     }
 }

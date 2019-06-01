@@ -865,6 +865,7 @@ public enum XMaterial {
         this.data = data;
     }
 
+    @SuppressWarnings("deprecation")
     public ItemStack parseItem(){
         Material mat = parseMaterial();
         if(isNewVersion()){
@@ -873,6 +874,7 @@ public enum XMaterial {
         return new ItemStack(mat,1,(byte) data);
     }
     public static boolean isNewVersion(){
+
         Material mat = Material.getMaterial("RED_WOOL");
         if(mat != null){
             return true;
@@ -896,6 +898,7 @@ public enum XMaterial {
         return null;
     }
 
+    @SuppressWarnings("deprecation")
     public boolean isSameMaterial(ItemStack comp){
         if(isNewVersion()){
             return comp.getType() == this.parseMaterial();

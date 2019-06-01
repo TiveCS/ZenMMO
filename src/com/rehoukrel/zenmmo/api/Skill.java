@@ -23,12 +23,14 @@ public abstract class Skill implements Cloneable {
     private PlayerData playerData;
     private int level = 0;
 
+    private boolean manualUpgrade = true;
     private String path;
     private String name;
     private int maxLevel = 15;
     private ItemStack icon;
     private List<String> description = new ArrayList<>(), rawDescription = new ArrayList<>();
     private SkillTree connectedTree;
+    private HashMap<Skill, Integer> requiredSkill = new HashMap<Skill, Integer>();
     private HashMap<String, Double> attribute = new HashMap<>();
     private HashMap<String, Object> customAttribute = new HashMap<>();
 
@@ -80,6 +82,8 @@ public abstract class Skill implements Cloneable {
             skill.rawDescription = this.rawDescription;
             skill.attribute = this.getAttribute();
             skill.customAttribute = this.getCustomAttribute();
+            skill.manualUpgrade = this.isManualUpgrade();
+            skill.requiredSkill = this.getRequiredSkill();
 
         } catch (CloneNotSupportedException e) {
             e.printStackTrace();
@@ -107,6 +111,8 @@ public abstract class Skill implements Cloneable {
             skill.rawDescription = this.rawDescription;
             skill.attribute = this.getAttribute();
             skill.customAttribute = this.getCustomAttribute();
+            skill.manualUpgrade = this.isManualUpgrade();
+            skill.requiredSkill = this.getRequiredSkill();
 
             skill.setPlaceholder(this.getPlaceholder());
             skill.setPlayerData(this.getPlayerData());
@@ -163,20 +169,44 @@ public abstract class Skill implements Cloneable {
     }
 
     public void loadPlayerDefaultIconTemplate(){
-        setDescription(rawDescription);
-        loadPlaceholderAttribute();
+        getDescription().clear();
+        getDescription().addAll(this.rawDescription);
+        loadPlaceholderAttribute(getPlayerData());
         ItemMeta meta = getIcon().getItemMeta();
         meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', "&6" + getName() + " &7(Level " + getLevel() + " / " + getMaxLevel() + " )"));
         List<String> lore = new ArrayList<>();
         lore.add(" ");
+
+        loadRequirementDescription(lore);
+
         lore.add("&e&lDESCRIPTION");
         lore.addAll(getDescription());
+        if (!isManualUpgrade()){
+            lore.add(" ");
+            lore.add("&cCannot manual upgrade");
+        }
         lore = getPlaceholder().useMass(lore);
         for (int i = 0; i < lore.size(); i++){
             lore.set(i, DataConverter.calculateString(lore.get(i), 1));
         }
         meta.setLore(DataConverter.colored(lore));
         getIcon().setItemMeta(meta);
+    }
+
+    public void loadRequirementDescription(List<String> lore){
+        if ((getRequiredSkill().size() > 0)) {
+            lore.add("&4&lREQUIREMENT");
+            if (getRequiredSkill().size() > 0) {
+                StringBuilder b = new StringBuilder();
+                int count = 0;
+                for (Skill s : getRequiredSkill().keySet()){
+                    String r = "&c" + s.getName() + "("+ getRequiredSkill().get(s) +")" + ((count == getRequiredSkill().size() - 1) ? "&7, " : "");
+                    b.append(r);
+                    count++;
+                }
+                lore.add(b.toString());
+            }
+        }
     }
 
     public void loadDefaultIconTemplate(){
@@ -187,8 +217,15 @@ public abstract class Skill implements Cloneable {
         lore.add(" ");
         lore.add("&fMax level of this skill &b" + getMaxLevel());
         lore.add(" ");
+
+        loadRequirementDescription(lore);
+
         lore.add("&e&lDESCRIPTION");
         lore.addAll(getDescription());
+        if (!isManualUpgrade()){
+            lore.add(" ");
+            lore.add("&cCannot manual upgrade");
+        }
         lore = getPlaceholder().useMass(lore);
         meta.setLore(DataConverter.colored(lore));
         getIcon().setItemMeta(meta);
@@ -196,12 +233,32 @@ public abstract class Skill implements Cloneable {
 
     // Player action
 
+    // Admin use only
     public void levelupTo(int newlevel){
         setLevel(newlevel);
     }
 
+    // Manual upgrade (player action) [ isManualUpgrade() is checked here ]
+    public void levelup(int addlevel){
+        HashMap<String, Skill> psk = getPlayerData().getSkillTree().get(getConnectedTree().getName()).getSkills();
+        if (getRequiredSkill().size() > 0) {
+            for (Skill sk : getRequiredSkill().keySet()) {
+                if (!(psk.get(sk).getLevel() >= getRequiredSkill().get(sk))) {
+                    getPlayerData().getPlayer().getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', "&cRequired skill " + sk.getName() + " Level " + sk.getLevel() + " to upgrade this skill"));
+                    return;
+                }
+            }
+        }
+        if (!isManualUpgrade()){
+            getPlayerData().getPlayer().getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', "&cCannot manual upgrade this skill"));
+            return;
+        }else {
+            getPlayerData().getPlayer().getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', "&7[ Skill " + getName() + " on tree " + getConnectedTree().getName() + " has been level up &7]"));
+            levelupTo(getLevel() + addlevel);
+        }
+    }
     public void levelup(){
-        levelupTo(getLevel() + 1);
+        levelup(1);
     }
 
     // Load attribute from player's file
@@ -224,6 +281,10 @@ public abstract class Skill implements Cloneable {
 
 
     // Creator action
+
+    public void addRequiredSkill(Skill sk, int skillLevel){
+        getRequiredSkill().put(sk, skillLevel);
+    }
 
     public void setPlaceholder(Placeholder plc){
         this.plc = plc;
@@ -263,6 +324,14 @@ public abstract class Skill implements Cloneable {
 
     public void setDescription(List<String> description) {
         this.description = description;
+    }
+
+    public void setManualUpgrade(boolean manualUpgrade) {
+        this.manualUpgrade = manualUpgrade;
+    }
+
+    public void setRequiredSkill(HashMap<Skill, Integer> requiredSkill) {
+        this.requiredSkill = requiredSkill;
     }
 
     // Player getter
@@ -316,5 +385,13 @@ public abstract class Skill implements Cloneable {
 
     public Placeholder getPlaceholder(){
         return plc;
+    }
+
+    public boolean isManualUpgrade() {
+        return manualUpgrade;
+    }
+
+    public HashMap<Skill, Integer> getRequiredSkill() {
+        return requiredSkill;
     }
 }

@@ -252,16 +252,28 @@ public class MainMenu extends UneditableMenu {
 
         //------------------------------------------------
         else if (state.equals(MainMenuState.SKILL_TREE)){
+            SkillTree sel = null;
             for (SkillTree st : pd.getSkillTree().values()){
                 if (st.getIcon().equals(item)){
-                    if (event.getClick().isLeftClick()) {
-                        loadSkill(st);
-                        state = MainMenuState.SKILL;
-                    }else if (event.getClick().isRightClick()){
-                        pd.chooseSkillTree(st);
-                        loadSkillTree();
-                    }
+                    sel = st;
                     break;
+                }
+            }
+            if (sel == null) {
+                for (SkillTree st : trees) {
+                    if (st.getIcon().equals(item)) {
+                        sel = st;
+                        break;
+                    }
+                }
+            }
+            if (sel != null){
+                if (event.getClick().isLeftClick()) {
+                    loadSkill(sel);
+                    state = MainMenuState.SKILL;
+                }else if (event.getClick().isRightClick()){
+                    pd.chooseSkillTree(sel);
+                    loadSkillTree();
                 }
             }
         }else if (state.equals(MainMenuState.SKILL) && temp.containsKey("skilltree")){
@@ -275,9 +287,8 @@ public class MainMenu extends UneditableMenu {
                     Skill playerSkill = playerTree.getSkills().get(sk.getName());
                     if (playerTree.getSkillPoint() > 0){
                         if (playerSkill.getLevel() < playerSkill.getMaxLevel()) {
-                            getViewer().sendMessage("Skill " + playerSkill.getName() + " on tree " + playerTree.getName() + " has been level up");
                             playerTree.addSkillPoint(-1);
-                            playerSkill.setLevel(playerSkill.getLevel() + 1);
+                            playerSkill.levelup();
                             getPlayerData().getConfigManager().input("skill-tree." + playerTree.getName() + ".skill-point", playerTree.getSkillPoint());
                             getPlayerData().getConfigManager().input(playerSkill.getAutoPath(), playerSkill.getLevel());
                             getPlayerData().getConfigManager().saveConfig();

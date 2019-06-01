@@ -35,9 +35,6 @@ public class CmdZenMMO implements CommandExecutor {
                             PlayerData pd = new PlayerData(op);
                             pd.openMenu(p);
                             pd.getMainMenu().setViewer(p);
-                            for (SkillTree tree : pd.getSkillTree().values()){
-                                p.sendMessage(tree.getLevel() + " " + tree.getName());
-                            }
                             return true;
                         }
                         if (strings.length == 4){
