@@ -96,7 +96,11 @@ public class DataConverter {
 				b.delete(s, e + 1);
 				num = returnDecimalFormated(formatLength, Double.parseDouble(se.eval(num).toString()));
 				b.insert(s, num);
-				return b.toString();
+				if (b.toString().contains("calc(")){
+					return calculateString(b.toString(), formatLength);
+				}else {
+					return b.toString();
+				}
 			}else{
 				return t;
 			}

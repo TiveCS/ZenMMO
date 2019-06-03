@@ -1,6 +1,7 @@
 package com.rehoukrel.zenmmo.api;
 
 import com.rehoukrel.zenmmo.ZenMMO;
+import com.rehoukrel.zenmmo.event.BasicEvent;
 import com.rehoukrel.zenmmo.menu.MainMenu;
 import com.rehoukrel.zenmmo.utils.ConfigManager;
 import org.bukkit.ChatColor;
@@ -42,6 +43,9 @@ public class PlayerData {
 
         if (getPlayer().isOnline()) {
             this.mm = new MainMenu(this);
+        }
+        if (player.isOnline()) {
+            BasicEvent.pds.put(player.getPlayer(), this);
         }
     }
 

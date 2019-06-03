@@ -8,7 +8,7 @@ import java.util.Arrays;
 public class WaterHunting extends Skill {
     public WaterHunting() {
         super("WaterHunting", XMaterial.BOW.parseMaterial(),
-                Arrays.asList("&7- Arrow ignore water physics while sneak [Level %waterhunting_attribute_water-arrow%]",
+                Arrays.asList("&7- Boost arrow speed while underwater [Level %waterhunting_attribute_water-arrow%]",
                         "&7- Apply vision underwater [calc(%waterhunting_attribute_vision%*%level%) second(s)]",
                         "&7- Cannot be targeted by mobs while underwater [Level %waterhunting_attribute_hide%]"), 25);
 
