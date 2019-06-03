@@ -6,6 +6,7 @@ import com.rehoukrel.zenmmo.utils.ConfigManager;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
+import org.bukkit.permissions.PermissionAttachmentInfo;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -101,8 +102,10 @@ public class PlayerData {
         }
         getSkillTree().clear();
         for (String path : getConfigManager().getConfig().getStringList("player-data.skill-tree")){
-            SkillTree tree  = SkillTree.skillTree.get(path).getPlayerProfile(this);
-            getSkillTree().put(path, tree);
+            if (SkillTree.skillTree.containsKey(path)) {
+                SkillTree tree = SkillTree.skillTree.get(path).getPlayerProfile(this);
+                getSkillTree().put(path, tree);
+            }
         }
 
         maxSkillTree = Integer.parseInt(getRawData().get("max-skill-tree").toString());
@@ -134,10 +137,39 @@ public class PlayerData {
     }
 
     public void initializeDefaultData(){
-        for (String path : plugin.getConfig().getConfigurationSection("player-data").getKeys(false)){
+        List<String> l = new ArrayList<>(plugin.getConfig().getConfigurationSection("player-data").getKeys(false));
+
+        int high = 0, permLength = "zenmmo.player.maxskill.".length();
+        boolean hasPerm = false;
+        for (PermissionAttachmentInfo s : getPlayer().getPlayer().getEffectivePermissions()){
+            String perm = s.getPermission();
+            if (perm.startsWith("zenmmo.player.maxskill.")){
+                if (perm.endsWith("-1")){
+                    high = -1;
+                    hasPerm = true;
+                    break;
+                }else{
+                    int curr = 0;
+                    try{
+                        curr = Integer.parseInt(perm.substring(permLength));
+                    }catch(Exception e){}
+                    if (high < curr){
+                        high = curr;
+                        hasPerm = true;
+                    }
+                }
+            }
+        }
+        if (hasPerm) {
+            getConfigManager().input("player-data.max-skill-tree", high);
+            l.remove("max-skill-tree");
+        }
+
+        for (String path : l){
             String pt = "player-data." + path;
             getConfigManager().init(pt, plugin.getConfig().get(pt));
         }
+
         getConfigManager().saveConfig();
     }
 

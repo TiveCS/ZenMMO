@@ -23,7 +23,7 @@ public abstract class Skill implements Cloneable {
     private PlayerData playerData;
     private int level = 0;
 
-    private boolean manualUpgrade = true;
+    private boolean manualUpgrade = true, enable = true;
     private String path;
     private String name;
     private int maxLevel = 15;
@@ -334,6 +334,10 @@ public abstract class Skill implements Cloneable {
         this.requiredSkill = requiredSkill;
     }
 
+    public void setEnable(boolean enable) {
+        this.enable = enable;
+    }
+
     // Player getter
 
     public PlayerData getPlayerData() {
@@ -346,6 +350,11 @@ public abstract class Skill implements Cloneable {
 
 
     // Creator getter
+
+
+    public boolean isEnable() {
+        return enable;
+    }
 
     public int getMaxLevel() {
         return maxLevel;

@@ -14,9 +14,9 @@ import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityShootBowEvent;
-import org.bukkit.event.entity.EntityTameEvent;
+import org.bukkit.event.enchantment.EnchantItemEvent;
+import org.bukkit.event.entity.*;
+import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
@@ -39,7 +39,7 @@ public abstract class SkillTree implements Cloneable {
     private int level, exp, skillPoint = 0;
     private PlayerData playerData;
 
-    private boolean useIncrement = false;
+    private boolean useIncrement = false, enable = true, useTemplate = false;
     private int skillPointIncrement = 2;
     private File file;
     private ConfigManager configManager;
@@ -57,8 +57,8 @@ public abstract class SkillTree implements Cloneable {
         }
         this.file = new File(getFolder(), getName() + ".yml");
         this.configManager = new ConfigManager(plugin, getFile());
+        this.useTemplate = true;
         initializeDefaultData();
-        loadIcon();
     }
 
     public SkillTree(String name, ItemStack icon, List<String> description){
@@ -75,16 +75,23 @@ public abstract class SkillTree implements Cloneable {
 
     //----------------- EVENT -----------------------
 
-    public abstract void onBlockBreak(BlockBreakEvent event);
-    public abstract void onEntityBowShoot(EntityShootBowEvent event);
-    public abstract void onEntityDamage(EntityDamageByEntityEvent event);
-    public abstract void onPlayerFish(PlayerFishEvent event);
-    public abstract void onTame(EntityTameEvent event);
+    public void onBlockBreak(BlockBreakEvent event){}
+    public void onEntityBowShoot(EntityShootBowEvent event){}
+    public void onEntityDamage(EntityDamageByEntityEvent event){}
+    public void onEntityDropItem(EntityDropItemEvent event){}
+    public void onEntityTarget(EntityTargetLivingEntityEvent event){}
+    public void onPlayerFish(PlayerFishEvent event){}
+    public void onPlayerCraft(CraftItemEvent event){}
+    public void onPlayerTame(EntityTameEvent event){}
+    public void onPlayerBreed(EntityBreedEvent event){}
+    public void onPlayerEnchant(EnchantItemEvent event){}
+    public void onProjectileHit(ProjectileHitEvent event){}
+    public void onDamage(EntityDamageEvent event){}
 
     //------------------------------------------------
 
     public void startCooldown(){
-        startCooldown(30);
+        startCooldown(20);
     }
 
     public void startCooldown(int cd){
@@ -243,22 +250,23 @@ public abstract class SkillTree implements Cloneable {
         if (getConfigManager().contains("description")){
             setDescription(getConfigManager().getConfig().getStringList("description"));
         }
+        setEnable(getConfigManager().getConfig().getBoolean("enable"));
     }
 
     public void loadIconWithPlayer(){
         ItemMeta meta = getIcon().getItemMeta();
         meta.setDisplayName(ChatColor.translateAlternateColorCodes('&', "&a" + getName() +" &7(Level " + getLevel() + ") [&6" + DataConverter.returnDecimalFormated(1, getPercentage()) +"%&7]"));
         List<String> lore = new ArrayList<>();
-        List<String> sk = new ArrayList<>();
-        ConfigurationSection cs = getConfigManager().getConfig().getConfigurationSection("skills");
-        if (getConfigManager().contains("skills")){
+        //List<String> sk = new ArrayList<>();
+        //ConfigurationSection cs = getConfigManager().getConfig().getConfigurationSection("skills");
+        /*if (getConfigManager().contains("skills")){
             sk = new ArrayList<>(cs.getKeys(false));
-        }
+        }*/
 
         lore.add(" ");
         lore.add("&fSkill Point left &c" + getSkillPoint());
         lore.add(" ");
-        lore.add("&fThis tree contains &b" + sk.size() + " &fskill(s)");
+        lore.add("&fThis tree contains &b" + this.getSkills().size() + " &fskill(s)");
         lore.add(" ");
         lore.add("&e&lDESCRIPTION");
         lore.addAll(getDescription());
@@ -270,14 +278,14 @@ public abstract class SkillTree implements Cloneable {
         ItemMeta meta = getIcon().getItemMeta();
         meta.setDisplayName(ChatColor.GREEN + getName());
         List<String> lore = new ArrayList<>();
-        List<String> sk = new ArrayList<>();
-        ConfigurationSection cs = getConfigManager().getConfig().getConfigurationSection("skills");
-        if (getConfigManager().contains("skills")){
+        //List<String> sk = new ArrayList<>();
+        //ConfigurationSection cs = getConfigManager().getConfig().getConfigurationSection("skills");
+        /*if (getConfigManager().contains("skills")){
             sk = new ArrayList<>(cs.getKeys(false));
-        }
+        }*/
 
         lore.add(" ");
-        lore.add("&fThis tree contains &b" + sk.size() + " &fskill(s)");
+        lore.add("&fThis tree contains &b" + this.getSkills().size() + " &fskill(s)");
         lore.add(" ");
         lore.add("&e&lDESCRIPTION");
         lore.addAll(getDescription());
@@ -287,8 +295,13 @@ public abstract class SkillTree implements Cloneable {
 
     public static void register(SkillTree... tree){
         for (SkillTree st : tree){
-            skillTree.put(st.getName(), st);
             st.initializeDefaultData();
+            if (st.isEnable()) {
+                skillTree.put(st.getName(), st);
+                if (st.useTemplate) {
+                    st.loadIcon();
+                }
+            }
         }
     }
 
@@ -298,11 +311,8 @@ public abstract class SkillTree implements Cloneable {
 
     public void addSkill(Skill... skills){
         for (Skill s : skills){
-            this.skills.put(s.getName(), s);
-            s.setConnectedTree(this);
-            Skill.skills.put(s.getName(), s);
-
             String path = "skills." + s.getName();
+            getConfigManager().init(path + ".enable", true);
             getConfigManager().init(path + ".max-level", s.getMaxLevel());
             getConfigManager().init(path + ".description", s.getDescription());
 
@@ -317,6 +327,7 @@ public abstract class SkillTree implements Cloneable {
 
         for (Skill s : skills){
             String path = "skills." + s.getName();
+            s.setEnable(getConfigManager().getConfig().getBoolean(path + ".enable"));
             s.setMaxLevel(getConfigManager().getConfig().getInt(path + ".max-level"));
             s.setDescription(getConfigManager().getConfig().getStringList(path + ".description"));
 
@@ -325,6 +336,12 @@ public abstract class SkillTree implements Cloneable {
             }
             for (String a : s.getCustomAttribute().keySet()) {
                 s.getCustomAttribute().put(a, getConfigManager().getConfig().get(path + ".custom-attribute." + a));
+            }
+
+            if (s.isEnable()) {
+                this.skills.put(s.getName(), s);
+                s.setConnectedTree(this);
+                Skill.skills.put(s.getName(), s);
             }
         }
     }
@@ -363,8 +380,23 @@ public abstract class SkillTree implements Cloneable {
         this.useIncrement = useIncrement;
     }
 
+    public void setEnable(boolean enable) {
+        this.enable = enable;
+    }
+
+    public void setUseTemplate(boolean useTemplate) {
+        this.useTemplate = useTemplate;
+    }
+
     // Getter
 
+    public boolean isEnable() {
+        return enable;
+    }
+
+    public boolean isUseTemplate() {
+        return useTemplate;
+    }
 
     public int getSkillPointIncrement() {
         return skillPointIncrement;

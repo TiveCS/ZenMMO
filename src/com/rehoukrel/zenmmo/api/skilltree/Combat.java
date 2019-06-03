@@ -14,12 +14,11 @@ import org.bukkit.Sound;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
-import org.bukkit.event.block.BlockBreakEvent;
+import org.bukkit.entity.Projectile;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
-import org.bukkit.event.entity.EntityTameEvent;
-import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
 import org.bukkit.util.Vector;
@@ -53,13 +52,20 @@ public class Combat extends SkillTree {
     }
 
     @Override
-    public void onBlockBreak(BlockBreakEvent event) {
-
-    }
-
-    @Override
     public void onEntityBowShoot(EntityShootBowEvent event) {
-
+        if (event.isCancelled()){
+            return;
+        }
+        Archery archery = (Archery) this.getSkills().get("Archery");
+        if (archery.getLevel() > 0) {
+            Projectile proj = (Projectile) event.getProjectile();
+            ParticleManager pm = new ParticleManager(plugin, proj);
+            double headcahe = archery.getAttribute().get("headache")*archery.getLevel(), power = archery.getAttribute().get("power")*archery.getLevel();
+            if (DataConverter.chance(headcahe)){
+                proj.setMetadata("headache", new FixedMetadataValue(plugin, true));
+            }
+            proj.setMetadata("power", new FixedMetadataValue(plugin, power));
+        }
     }
 
     @Override
@@ -70,9 +76,32 @@ public class Combat extends SkillTree {
 
         if (event.getEntity() instanceof LivingEntity && (!uncount.contains(event.getEntity().getType()))) {
             LivingEntity victim = (LivingEntity) event.getEntity();
+            ParticleManager pm = new ParticleManager(plugin, victim);
 
             if (victim.isInvulnerable()){return;}
-            if (event.getDamager().equals(getPlayerData().getPlayer())) {
+            if (event.getDamager() instanceof Projectile){
+                Archery archery = (Archery) this.getSkills().get("Archery");
+                Projectile proj = (Projectile) event.getDamager();
+                addExp(new Random().nextInt(4));
+                startCooldown();
+                showProgress((Player) proj.getShooter());
+                double dmg = event.getDamage();
+                if (proj.hasMetadata("power")) {
+                    event.setDamage(dmg + (dmg * proj.getMetadata("power").get(0).asDouble() / 100));
+                }
+                if (proj.hasMetadata("headache")) {
+                    if (proj.getMetadata("headache").get(0).asBoolean()) {
+                        pm.dotParticle(Particle.EXPLOSION_LARGE, 1, 0, 0, 0);
+                        event.setDamage(event.getDamage() + (dmg * (50 + archery.getLevel()) / 100));
+                        victim.setVelocity(proj.getLocation().getDirection());
+                        victim.addPotionEffect(new PotionEffect(PotionEffectType.SLOW, 20, 4), true);
+                        victim.addPotionEffect(new PotionEffect(PotionEffectType.CONFUSION, 100, 2), true);
+                    }
+                }
+                return;
+            }
+
+            else if (event.getDamager().equals(getPlayerData().getPlayer())) {
                 Player attacker = (Player) event.getDamager();
                 ItemStack hand = attacker.getInventory().getItemInMainHand();
                 int maxExp = 2;
@@ -144,16 +173,19 @@ public class Combat extends SkillTree {
                     double bleed = sword.getAttribute().get("bleed")*sword.getLevel(), thrust = sword.getAttribute().get("thrust")*sword.getLevel();
                     double rand = new Random().nextDouble(), dmg = event.getDamage();
                     event.setDamage(dmg + (dmg*(sword.getLevel()*rand/4)/4));
-                    ParticleManager pm = new ParticleManager(plugin, victim);
+                    pm.setOffsetY(1);
                     if (DataConverter.chance(bleed)){
                         event.setDamage(event.getDamage() + (dmg*(25 + sword.getLevel())/100));
                         victim.getWorld().playSound(victim.getLocation(), Sound.ENTITY_PLAYER_HURT, 1, 0);
-                        pm.trails(Particle.LAVA, victim, 2, 60, 20);
+                        pm.trailsBlockCrack(Material.REDSTONE_BLOCK, victim, 10, 60, 20);
                         for (int i = 1; i <= 3; i++){
-                            Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, new Runnable() {
+                            Bukkit.getScheduler().runTaskLater(plugin, new Runnable() {
                                 @Override
                                 public void run() {
-                                    victim.damage(event.getDamage()/8, attacker);
+                                    if (!victim.isDead()) {
+                                        victim.damage(event.getDamage() / 8, attacker);
+                                        pm.dotParticle(Particle.REDSTONE, 10, 0.5, 255, 0,0);
+                                    }
                                 }
                             }, 20*i);
                         }
@@ -161,20 +193,10 @@ public class Combat extends SkillTree {
                     if (DataConverter.chance(thrust)){
                         event.setDamage(event.getDamage() + (dmg*(75 + sword.getLevel())/100));
                         victim.getWorld().playSound(victim.getLocation(), Sound.ENTITY_ZOMBIE_ATTACK_IRON_DOOR, 1, 2);
-                        pm.dotParticle(Particle.CLOUD, 5);
+                        pm.dotParticle(Particle.CLOUD, 5, 0.2, 0,0,0);
                     }
                 }
             }
         }
-    }
-
-    @Override
-    public void onPlayerFish(PlayerFishEvent event) {
-
-    }
-
-    @Override
-    public void onTame(EntityTameEvent event) {
-
     }
 }

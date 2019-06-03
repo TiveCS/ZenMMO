@@ -10,10 +10,7 @@ import javax.script.ScriptEngine;
 import javax.script.ScriptEngineManager;
 import javax.script.ScriptException;
 
-import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
-import org.bukkit.Location;
-import org.bukkit.Sound;
+import org.bukkit.*;
 
 import net.md_5.bungee.api.chat.TextComponent;
 
@@ -60,6 +57,14 @@ public class DataConverter {
 
 	public static boolean chance(double num){
 		return num >= new Random().nextDouble() * 100;
+	}
+
+	public static boolean isLegacyVersion(){
+		Material mat;
+		try{
+			mat = Material.getMaterial("RED_WOOL");
+		}catch (Exception e){return true;}
+		return mat == null;
 	}
 
 	public static int convertStringToInt(String text) {

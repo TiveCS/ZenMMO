@@ -5,7 +5,6 @@ import com.rehoukrel.zenmmo.api.Skill;
 import com.rehoukrel.zenmmo.api.SkillTree;
 import com.rehoukrel.zenmmo.api.skill.resource.Mining;
 import com.rehoukrel.zenmmo.api.skill.resource.Woodcutting;
-import com.rehoukrel.zenmmo.event.OnShears;
 import com.rehoukrel.zenmmo.utils.DataConverter;
 import com.rehoukrel.zenmmo.utils.XMaterial;
 import org.bukkit.Bukkit;
@@ -17,7 +16,6 @@ import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
 import org.bukkit.event.entity.EntityTameEvent;
 import org.bukkit.event.player.PlayerFishEvent;
-import org.bukkit.event.player.PlayerShearEntityEvent;
 import org.bukkit.inventory.ItemStack;
 
 import java.util.*;
@@ -69,6 +67,7 @@ public class Resource extends SkillTree {
         addSkill(new Woodcutting(), new Mining());
         loadIcon();
     }
+
 
     @SuppressWarnings("deprecation")
     @Override
@@ -136,7 +135,8 @@ public class Resource extends SkillTree {
                         }
                     }, 60l);
                 }
-            }else if (ORE.contains(block.getType()) && PICKAXE.contains(hand.getType())){
+            }
+            else if (ORE.contains(block.getType()) && PICKAXE.contains(hand.getType())){
 
                 s = ORE_CHECKER.get(xm);
                 if (s.equals("EMERALD")){
@@ -149,6 +149,8 @@ public class Resource extends SkillTree {
                     productBlock = XMaterial.REDSTONE.parseItem();
                 }else if (s.equals("LAPIS")) {
                     productBlock = XMaterial.LAPIS_LAZULI.parseItem();
+                }else if (s.equals("COAL")) {
+                    productBlock = XMaterial.COAL.parseItem();
                 }else {
                     for (XMaterial c : ORE_CHECKER.keySet()) {
                         if (ORE_CHECKER.get(c).equals(s)) {
@@ -175,23 +177,4 @@ public class Resource extends SkillTree {
         }
     }
 
-    @Override
-    public void onEntityBowShoot(EntityShootBowEvent event) {
-
-    }
-
-    @Override
-    public void onEntityDamage(EntityDamageByEntityEvent event) {
-
-    }
-
-    @Override
-    public void onPlayerFish(PlayerFishEvent event) {
-
-    }
-
-    @Override
-    public void onTame(EntityTameEvent event) {
-
-    }
 }

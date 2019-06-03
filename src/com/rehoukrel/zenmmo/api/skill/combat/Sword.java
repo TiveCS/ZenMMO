@@ -12,7 +12,7 @@ public class Sword extends Skill {
                 ,"&7- Chance to Thrust [calc(%sword_attribute_thrust%*%level%)%]"), 20);
 
         addAttribute("bleed", 1.75); // Chance
-        addAttribute("thrust", 0.5); // Chance
+        addAttribute("thrust", 2); // Chance
 
         loadPlaceholderAttribute();
         loadDefaultIconTemplate();
