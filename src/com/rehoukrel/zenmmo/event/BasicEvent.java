@@ -3,6 +3,7 @@ package com.rehoukrel.zenmmo.event;
 import com.rehoukrel.zenmmo.api.PlayerData;
 import com.rehoukrel.zenmmo.api.SkillTree;
 import com.rehoukrel.zenmmo.utils.menu.UneditableMenu;
+import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
@@ -246,10 +247,11 @@ public class BasicEvent implements Listener{
     }
 
     @EventHandler
-    public void onEntityTarget(EntityTargetLivingEntityEvent event){
+    public void onEntityTarget(EntityTargetEvent event){
         if (event.isCancelled()){
             return;
         }
+
         if (event.getTarget() instanceof Player){
             if (!cooldown.contains(event.getTarget())){
                 PlayerData playerData = get((Player) event.getTarget());

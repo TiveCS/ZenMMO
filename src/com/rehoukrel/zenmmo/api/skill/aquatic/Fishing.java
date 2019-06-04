@@ -11,8 +11,8 @@ public class Fishing extends Skill {
                 Arrays.asList("&7- Increase exp receive [calc(%fishing_attribute_exp-bonus%*%level%)%]",
                         "&7- Chance to get treasure [calc(%fishing_attribute_treasurer%*%level%)%]"), 20);
 
-        addAttribute("exp-bonus", 20); // Bonus exp in percent
-        addAttribute("treasurer", 0.5);
+        addAttribute("exp-bonus", 7.5); // Bonus exp in percent
+        addAttribute("treasurer", 0.2);
 
         loadPlaceholderAttribute();
         loadDefaultIconTemplate();

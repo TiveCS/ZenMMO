@@ -5,7 +5,6 @@ import com.rehoukrel.zenmmo.api.skill.aquatic.Breathing;
 import com.rehoukrel.zenmmo.api.skill.aquatic.Fishing;
 import com.rehoukrel.zenmmo.api.skill.aquatic.Mobility;
 import com.rehoukrel.zenmmo.api.skill.aquatic.WaterHunting;
-import com.rehoukrel.zenmmo.event.BasicEvent;
 import com.rehoukrel.zenmmo.utils.DataConverter;
 import com.rehoukrel.zenmmo.utils.XMaterial;
 import org.bukkit.Bukkit;
@@ -14,7 +13,7 @@ import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageEvent;
 import org.bukkit.event.entity.EntityShootBowEvent;
-import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
+import org.bukkit.event.entity.EntityTargetEvent;
 import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
@@ -36,7 +35,7 @@ public class Aquatic extends SkillTree {
     );
 
     List<Player> cd = new ArrayList<>();
-    List<Player> w = new ArrayList<>();
+    List<Player> visCd = new ArrayList<>();
 
     public Aquatic() {
         super("Aquatic", XMaterial.FISHING_ROD.parseMaterial(), Arrays.asList("&fMostly for aquatic activity", "&fand also for oceanic things"));
@@ -48,13 +47,14 @@ public class Aquatic extends SkillTree {
     }
 
     @Override
-    public void onEntityTarget(EntityTargetLivingEntityEvent event) {
-        if (event.getTarget().equals(getPlayerData().getPlayer())){
-            WaterHunting waterHunting = (WaterHunting) getSkills().get("WaterHunting");
+    public void onEntityTarget(EntityTargetEvent event) {
+        WaterHunting waterHunting = (WaterHunting) getSkills().get("WaterHunting");
+        if (waterHunting.getLevel() > 0) {
+            int hide = (int) Math.round(waterHunting.getAttribute().get("hide"));
             Player p = (Player) event.getTarget();
-            if (p.getWorld().getBlockAt(p.getEyeLocation()).isLiquid()){
-                if (waterHunting.getLevel() >= waterHunting.getAttribute().get("hide")) {
-                    event.setCancelled(true);
+            if (p.getWorld().getBlockAt(p.getEyeLocation()).isLiquid()) {
+                if (waterHunting.getLevel() >= hide) {
+                    event.setTarget(null);
                 }
             }
         }
@@ -62,28 +62,20 @@ public class Aquatic extends SkillTree {
 
     @Override
     public void onPlayerSprintToggle(PlayerToggleSprintEvent event) {
-        Mobility mobility = (Mobility) getSkills().get("Mobility");
-        int level = mobility.getLevel();
         Player p = event.getPlayer();
-        final float vel = event.getPlayer().getWalkSpeed();
-        if (level > 0){
-            if (event.getPlayer().getWorld().getBlockAt(event.getPlayer().getLocation()).isLiquid()) {
-                new BukkitRunnable() {
-                    boolean has = false;
 
+        WaterHunting waterHunting = (WaterHunting) getSkills().get("WaterHunting");
+        if (waterHunting.getLevel() > 0){
+            final int vision = (int) Math.round(waterHunting.getAttribute().get("vision")*waterHunting.getLevel())*20;
+            if (!visCd.contains(p) && (p.getWorld().getBlockAt(p.getLocation()).isLiquid())){
+                visCd.add(p);
+                p.addPotionEffect(new PotionEffect(PotionEffectType.NIGHT_VISION, vision, 0), true);
+                Bukkit.getScheduler().runTaskLater(plugin, new Runnable() {
                     @Override
                     public void run() {
-                        if (event.getPlayer().getWorld().getBlockAt(event.getPlayer().getLocation()).isLiquid()) {
-                            if (has == false){
-                                p.setWalkSpeed(vel*2);
-                            }
-                            has = true;
-                        } else {
-                            p.setWalkSpeed(vel*2);
-                            cancel();
-                        }
+                        visCd.remove(p);
                     }
-                }.runTaskTimer(plugin, 0, 20);
+                }, vision + 60);
             }
         }
     }
@@ -139,6 +131,7 @@ public class Aquatic extends SkillTree {
             event.setExpToDrop(result);
             event.getPlayer().sendMessage(ChatColor.translateAlternateColorCodes('&', "&8(&a+&8) &b" + bonus + " &7xp"));
             addExp(new Random().nextInt(15));
+            startCooldown(140);
             showProgress(event.getPlayer());
         }
     }

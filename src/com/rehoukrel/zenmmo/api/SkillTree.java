@@ -4,14 +4,12 @@ import com.rehoukrel.zenmmo.ZenMMO;
 import com.rehoukrel.zenmmo.event.BasicEvent;
 import com.rehoukrel.zenmmo.utils.ConfigManager;
 import com.rehoukrel.zenmmo.utils.DataConverter;
-import com.rehoukrel.zenmmo.utils.XMaterial;
 import com.rehoukrel.zenmmo.utils.language.Placeholder;
 import net.md_5.bungee.api.ChatMessageType;
 import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
-import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.enchantment.EnchantItemEvent;
@@ -81,7 +79,7 @@ public abstract class SkillTree implements Cloneable {
     public void onEntityBowShoot(EntityShootBowEvent event){}
     public void onEntityDamage(EntityDamageByEntityEvent event){}
     public void onEntityDropItem(EntityDropItemEvent event){}
-    public void onEntityTarget(EntityTargetLivingEntityEvent event){}
+    public void onEntityTarget(EntityTargetEvent event){}
 
     public void onPlayerFish(PlayerFishEvent event){}
     public void onPlayerCraft(CraftItemEvent event){}
