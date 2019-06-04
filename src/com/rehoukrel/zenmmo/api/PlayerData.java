@@ -4,6 +4,7 @@ import com.rehoukrel.zenmmo.ZenMMO;
 import com.rehoukrel.zenmmo.event.BasicEvent;
 import com.rehoukrel.zenmmo.menu.MainMenu;
 import com.rehoukrel.zenmmo.utils.ConfigManager;
+import com.rehoukrel.zenmmo.utils.language.Placeholder;
 import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.entity.Player;
@@ -19,6 +20,7 @@ public class PlayerData {
     private ZenMMO plugin = ZenMMO.getPlugin(ZenMMO.class);
     private File folder = new File(plugin.getDataFolder(), "PlayerData");
 
+    private Placeholder plc = new Placeholder();
     private OfflinePlayer player;
     private File file;
     private ConfigManager configManager;
@@ -183,6 +185,9 @@ public class PlayerData {
         return mm;
     }
 
+    public Placeholder getPlaceholder(){
+        return this.plc;
+    }
 
     public HashMap<String, Object> getRawData() {
         return rawData;

@@ -247,6 +247,36 @@ public class BasicEvent implements Listener{
     }
 
     @EventHandler
+    public void onEntityHungerChange(FoodLevelChangeEvent event){
+        if (event.isCancelled()){
+            return;
+        }
+        if (event.getEntity() instanceof Player){
+            if (!cooldown.contains(event.getEntity())){
+                PlayerData pd = get((Player) event.getEntity());
+                for (SkillTree tree : pd.getSkillTree().values()){
+                    tree.onEntityHungerChange(event);
+                }
+            }
+        }
+    }
+
+    @EventHandler
+    public void onEntityPotionEffectChange(EntityPotionEffectEvent event){
+        if (event.isCancelled()){
+            return;
+        }
+        if (event.getEntity() instanceof Player){
+            if (!cooldown.contains(event.getEntity())){
+                PlayerData pd = get((Player) event.getEntity());
+                for (SkillTree tree : pd.getSkillTree().values()){
+                    tree.onEntityPotionChange(event);
+                }
+            }
+        }
+    }
+
+    @EventHandler
     public void onEntityTarget(EntityTargetEvent event){
         if (event.isCancelled()){
             return;

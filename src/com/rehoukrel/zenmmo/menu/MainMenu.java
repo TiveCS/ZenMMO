@@ -213,9 +213,6 @@ public class MainMenu extends UneditableMenu {
                         map.put(slot, icon);
                     }else{
                         ItemStack icon = trees.get(count).getIcon().clone();
-                        if (pd.getMaxSkillTree() - pd.getSkillTree().size() <= 0) {
-                            icon.setType(Material.BARRIER);
-                        }
                         map.put(slot, icon);
                     }
                     count++;

@@ -7,6 +7,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -37,12 +38,11 @@ public abstract class Skill implements Cloneable {
     // Player
     public Skill(PlayerData playerData){
         this.playerData = playerData;
+        this.plc = playerData.getPlaceholder();
 
         getCreatorData();
         this.level = Integer.parseInt(playerData.getConfigManager().get("skill-tree." + getConnectedTree().getName() + "." + getName()).toString());
 
-        loadAttribute();
-        loadCustomAttribute();
         loadPlaceholderAttribute(playerData);
         loadDefaultIconTemplate();
 
@@ -138,6 +138,7 @@ public abstract class Skill implements Cloneable {
 
     public void loadPlaceholderAttribute(PlayerData pd){
         getPlaceholder().addReplacer("level", getLevel() + "");
+        getPlaceholder().addReplacer("max_level", getMaxLevel() + "");
         getPlaceholder().addReplacer(getName() + "_level", getLevel() + "");
         getPlaceholder().addReplacer(getName() + "_maxlevel", getMaxLevel() + "");
         getPlaceholder().addReplacer("player", pd.getPlayer().getName());
@@ -160,11 +161,18 @@ public abstract class Skill implements Cloneable {
     }
 
     public void loadPlaceholderAttribute(){
+        getPlaceholder().addReplacer("level", "0");
         for (String s : getAttribute().keySet()){
-            getPlaceholder().addReplacer((getName() + "_attribute_" + s).toLowerCase(), getAttribute().get(s) + "");
+            String a = getAttribute().get(s) + "";
+            if (a.endsWith(".0")){
+                a = a.substring(0, a.lastIndexOf(".0"));
+            }
+            getPlaceholder().addReplacer((getName() + "_attribute_" + s).toLowerCase(), a + "");
+            getPlaceholder().addReplacer((s).toLowerCase(), a + "");
         }
         for (String s : getCustomAttribute().keySet()){
             getPlaceholder().addReplacer((getName() + "_custom_attribute_" + s).toLowerCase(), getCustomAttribute().get(s) + "");
+            getPlaceholder().addReplacer((s).toLowerCase(), getCustomAttribute().get(s) + "");
         }
     }
 
@@ -227,6 +235,9 @@ public abstract class Skill implements Cloneable {
             lore.add("&cCannot manual upgrade");
         }
         lore = getPlaceholder().useMass(lore);
+        for (int i = 0; i < lore.size(); i++){
+            lore.set(i, DataConverter.calculateString(lore.get(i), 1));
+        }
         meta.setLore(DataConverter.colored(lore));
         getIcon().setItemMeta(meta);
     }
@@ -259,16 +270,6 @@ public abstract class Skill implements Cloneable {
     }
     public void levelup(){
         levelup(1);
-    }
-
-    // Load attribute from player's file
-    public void loadCustomAttribute(){
-
-    }
-
-    // Load attribute from player's file
-    public void loadAttribute(){
-
     }
 
     public void setLevel(int level) {
@@ -338,6 +339,10 @@ public abstract class Skill implements Cloneable {
         this.enable = enable;
     }
 
+    public void setRawDescription(List<String> rawDescription) {
+        this.rawDescription = rawDescription;
+    }
+
     // Player getter
 
     public PlayerData getPlayerData() {
@@ -351,6 +356,10 @@ public abstract class Skill implements Cloneable {
 
     // Creator getter
 
+
+    public List<String> getRawDescription() {
+        return rawDescription;
+    }
 
     public boolean isEnable() {
         return enable;

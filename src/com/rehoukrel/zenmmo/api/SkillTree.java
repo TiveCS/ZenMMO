@@ -10,6 +10,7 @@ import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
+import org.bukkit.enchantments.Enchantment;
 import org.bukkit.entity.Player;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.enchantment.EnchantItemEvent;
@@ -18,6 +19,7 @@ import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
+import org.bukkit.inventory.ItemFlag;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.ItemMeta;
 
@@ -80,6 +82,8 @@ public abstract class SkillTree implements Cloneable {
     public void onEntityDamage(EntityDamageByEntityEvent event){}
     public void onEntityDropItem(EntityDropItemEvent event){}
     public void onEntityTarget(EntityTargetEvent event){}
+    public void onEntityPotionChange(EntityPotionEffectEvent event){}
+    public void onEntityHungerChange(FoodLevelChangeEvent event){}
 
     public void onPlayerFish(PlayerFishEvent event){}
     public void onPlayerCraft(CraftItemEvent event){}
@@ -255,6 +259,9 @@ public abstract class SkillTree implements Cloneable {
             setDescription(getConfigManager().getConfig().getStringList("description"));
         }
         setEnable(getConfigManager().getConfig().getBoolean("enable"));
+        if (useTemplate){
+            loadIcon();
+        }
     }
 
     public void loadIconWithPlayer(){
@@ -275,6 +282,8 @@ public abstract class SkillTree implements Cloneable {
         lore.add("&e&lDESCRIPTION");
         lore.addAll(getDescription());
         meta.setLore(DataConverter.colored(lore));
+        meta.addEnchant(Enchantment.ARROW_INFINITE, 1, true);
+        meta.addItemFlags(ItemFlag.HIDE_ENCHANTS);
         getIcon().setItemMeta(meta);
     }
 
@@ -333,8 +342,8 @@ public abstract class SkillTree implements Cloneable {
             String path = "skills." + s.getName();
             s.setEnable(getConfigManager().getConfig().getBoolean(path + ".enable"));
             s.setMaxLevel(getConfigManager().getConfig().getInt(path + ".max-level"));
+            s.setRawDescription(getConfigManager().getConfig().getStringList(path + ".description"));
             s.setDescription(getConfigManager().getConfig().getStringList(path + ".description"));
-
             for (String a : s.getAttribute().keySet()) {
                 s.getAttribute().put(a, getConfigManager().getConfig().getDouble(path + ".attribute." + a));
             }
