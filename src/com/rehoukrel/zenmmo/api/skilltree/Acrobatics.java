@@ -15,9 +15,11 @@ import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent;
+import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
 import org.bukkit.potion.PotionEffect;
 import org.bukkit.potion.PotionEffectType;
+import org.bukkit.util.Vector;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -26,7 +28,7 @@ import java.util.Random;
 
 public class Acrobatics extends SkillTree {
 
-    public List<Player> cd_slow = new ArrayList<>(), cd_speed = new ArrayList<>(), cd_defense = new ArrayList<>();
+    public List<Player> cd_slow = new ArrayList<>(), cd_speed = new ArrayList<>(), cd_defense = new ArrayList<>(), cd_leap = new ArrayList<>();
 
     public Acrobatics() {
         super("Acrobatics", XMaterial.LEATHER_BOOTS.parseMaterial(), Arrays.asList("&fGive you outstanding movement", "&fand useful tricks for survival"));
@@ -71,7 +73,8 @@ public class Acrobatics extends SkillTree {
     @Override
     public void onEntityDamage(EntityDamageByEntityEvent event) {
         Backstep backstep = (Backstep) getSkills().get("Backstep");
-        if (backstep.getLevel() > 0) {
+        LivingEntity victim = (LivingEntity) event.getEntity();
+        if (backstep.getLevel() > 0 && victim.equals(getPlayerData().getPlayer().getPlayer())) {
             int level = backstep.getLevel();
             double dodge = backstep.getAttribute().get("dodge") * level;
             int dodgeProjectileLevel = (int) Math.round(backstep.getAttribute().get("dodge-projectile"));
@@ -88,6 +91,25 @@ public class Acrobatics extends SkillTree {
                 addExp(15);
                 startCooldown();
                 showProgress((Player) event.getEntity());
+            }
+        }
+    }
+
+    @Override
+    public void onPlayerSneakToggle(PlayerToggleSneakEvent event){
+        Player p = event.getPlayer();
+        Leap leap = (Leap) getSkills().get("Leap");
+        if (leap.getLevel() > 0){
+            int level = leap.getLevel();
+            int leapReq = (int) Math.round(leap.getAttribute().get("leap"));
+            if (level >= leapReq && !cd_leap.contains(p) && p.isOnGround()){
+                cd_leap.add(p);
+                Vector vec = p.getEyeLocation().getDirection().clone().multiply(1.5);
+                vec = vec.add(new Vector(0, 1, 0));
+                p.setVelocity(vec);
+                Bukkit.getScheduler().runTaskLater(plugin, () -> {
+                    cd_leap.remove(p);
+                }, 100);
             }
         }
     }
