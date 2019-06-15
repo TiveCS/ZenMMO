@@ -1,5 +1,6 @@
 package com.rehoukrel.zenmmo.api.skill.taming;
 
+import com.rehoukrel.zenmmo.ZenMMO;
 import com.rehoukrel.zenmmo.api.Skill;
 import com.rehoukrel.zenmmo.utils.ParticleManager;
 import com.rehoukrel.zenmmo.utils.XMaterial;
@@ -11,6 +12,8 @@ import org.bukkit.potion.PotionEffectType;
 import java.util.Arrays;
 
 public class FriendlyAura extends Skill {
+
+    ZenMMO plugin = ZenMMO.getPlugin(ZenMMO.class);
 
     public FriendlyAura() {
         super("FriendlyAura", XMaterial.OAK_SAPLING.parseMaterial(),
@@ -34,7 +37,7 @@ public class FriendlyAura extends Skill {
         le.addPotionEffect(regen);
         le.addPotionEffect(absorption);
 
-        ParticleManager pm = new ParticleManager(le);
+        ParticleManager pm = new ParticleManager(plugin, le);
         pm.trails(Particle.VILLAGER_HAPPY, le, 1, duration*20, 10);
     }
 }

@@ -18,18 +18,12 @@ public class ParticleManager {
         this.plugin = plugin;
     }
 
+    public ParticleManager(Plugin plugin){
+        this.plugin = plugin;
+    }
+
     public ParticleManager(Plugin plugin, Entity entity){
         this(plugin, entity.getLocation());
-        this.entity = entity;
-    }
-
-    public ParticleManager(){}
-    public ParticleManager(Location loc){
-        this.location = loc;
-    }
-
-    public ParticleManager(Entity entity){
-        this(entity.getLocation());
         this.entity = entity;
     }
 

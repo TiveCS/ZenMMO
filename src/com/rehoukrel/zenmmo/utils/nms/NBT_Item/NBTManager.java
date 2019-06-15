@@ -24,6 +24,7 @@ public abstract class NBTManager {
     public abstract void deleteNbt(String path);
 
     public abstract String getString(String path);
+    public abstract boolean getBoolean(String path);
     public abstract int getInt(String path);
     public abstract double getDouble(String path);
     public abstract byte getByte(String path);

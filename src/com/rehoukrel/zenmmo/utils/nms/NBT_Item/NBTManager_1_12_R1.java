@@ -14,13 +14,16 @@ public class NBTManager_1_12_R1 extends NBTManager {
         ItemStack nmsItemStack = CraftItemStack.asNMSCopy(getItem());
         NBTTagCompound nbt = nmsItemStack.hasTag() ? nmsItemStack.getTag() : new NBTTagCompound();
         if (value instanceof Integer){
-            nbt.set(path, new NBTTagInt(Integer.parseInt(value.toString())));
+            nbt.setInt(path, (Integer) value);
         }else if (value instanceof Double){
-            nbt.set(path, new NBTTagDouble(Double.parseDouble(value.toString())));
+            nbt.setDouble(path, (Double) value);
         }else if (value instanceof Byte){
-            nbt.set(path, new NBTTagByte(Byte.parseByte(value.toString())));
-        } else{
-            nbt.set(path, new NBTTagString(value.toString()));
+            nbt.setByte(path, (Byte) value);
+        } else if (value instanceof Boolean){
+            nbt.setBoolean(path, Boolean.parseBoolean(value.toString()));
+        }
+        else{
+            nbt.setString(path, value.toString());
         }
         nmsItemStack.setTag(nbt);
         setItem(CraftItemStack.asBukkitCopy(nmsItemStack));
@@ -47,6 +50,16 @@ public class NBTManager_1_12_R1 extends NBTManager {
             return nbt.getString(path);
         }
         return null;
+    }
+
+    @Override
+    public boolean getBoolean(String path) {
+        ItemStack nmsItemStack = CraftItemStack.asNMSCopy(getItem());
+        NBTTagCompound nbt = nmsItemStack.hasTag() ? nmsItemStack.getTag() : new NBTTagCompound();
+        if (nbt.hasKey(path)){
+            return nbt.getBoolean(path);
+        }
+        return false;
     }
 
     @Override

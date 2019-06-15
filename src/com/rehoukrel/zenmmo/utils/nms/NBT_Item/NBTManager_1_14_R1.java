@@ -23,6 +23,11 @@ public class NBTManager_1_14_R1 extends NBTManager {
     }
 
     @Override
+    public boolean getBoolean(String path) {
+        return false;
+    }
+
+    @Override
     public int getInt(String path) {
         return 0;
     }
