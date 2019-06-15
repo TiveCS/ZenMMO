@@ -16,6 +16,7 @@ import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.enchantment.EnchantItemEvent;
 import org.bukkit.event.entity.*;
 import org.bukkit.event.inventory.CraftItemEvent;
+import org.bukkit.event.player.PlayerExpChangeEvent;
 import org.bukkit.event.player.PlayerFishEvent;
 import org.bukkit.event.player.PlayerToggleSneakEvent;
 import org.bukkit.event.player.PlayerToggleSprintEvent;
@@ -92,6 +93,7 @@ public abstract class SkillTree implements Cloneable {
     public void onPlayerEnchant(EnchantItemEvent event){}
     public void onPlayerSneakToggle(PlayerToggleSneakEvent event){}
     public void onPlayerSprintToggle(PlayerToggleSprintEvent event){}
+    public void onPlayerExpChange(PlayerExpChangeEvent event){}
 
     public void onProjectileHit(ProjectileHitEvent event){}
     public void onDamage(EntityDamageEvent event){}

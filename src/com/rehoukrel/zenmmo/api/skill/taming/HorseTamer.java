@@ -12,12 +12,13 @@ import java.util.Arrays;
 public class HorseTamer extends Skill {
     public HorseTamer() {
         super("HorseTamer", XMaterial.HORSE_SPAWN_EGG.parseItem(),
-                Arrays.asList("&7- Exp bonus for [calc(%horsetamer_attribute_exp-boost%*%level%)]",
+                Arrays.asList("&7- Exp bonus for [calc(%horsetamer_attribute_exp-bonus%+%level%/2)]",
                         "&7- Allow to store horse into saddle [Level %horsetamer_attribute_call%]"), 15);
 
-        addAttribute("exp-boost", 20); // boost in percent
+        addAttribute("exp-bonus", 0); // exp bonus in amount
         addAttribute("call", 10); // Allow player store horse in saddle (in level)
 
+        loadPlaceholderAttribute();
         loadDefaultIconTemplate();
     }
 

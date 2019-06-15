@@ -15,10 +15,7 @@ import org.bukkit.event.entity.*;
 import org.bukkit.event.inventory.CraftItemEvent;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
-import org.bukkit.event.player.PlayerFishEvent;
-import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.player.PlayerToggleSneakEvent;
-import org.bukkit.event.player.PlayerToggleSprintEvent;
+import org.bukkit.event.player.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -257,6 +254,16 @@ public class BasicEvent implements Listener{
                 for (SkillTree tree : pd.getSkillTree().values()){
                     tree.onEntityHungerChange(event);
                 }
+            }
+        }
+    }
+
+    @EventHandler
+    public void onPlayerExpChange(PlayerExpChangeEvent event){
+        if (!cooldown.contains(event.getPlayer())) {
+            PlayerData pd = get(event.getPlayer());
+            for (SkillTree tree : pd.getSkillTree().values()) {
+                tree.onPlayerExpChange(event);
             }
         }
     }

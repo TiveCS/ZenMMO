@@ -23,6 +23,16 @@ public class ParticleManager {
         this.entity = entity;
     }
 
+    public ParticleManager(){}
+    public ParticleManager(Location loc){
+        this.location = loc;
+    }
+
+    public ParticleManager(Entity entity){
+        this(entity.getLocation());
+        this.entity = entity;
+    }
+
     public ParticleManager(Plugin plugin, Location loc, double offsetX, double offsetY, double offsetZ){
         this.plugin = plugin;
         this.location = loc;
@@ -84,17 +94,6 @@ public class ParticleManager {
             Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, () ->{
                 this.location = entity.getLocation();
                 dotParticle(particle, particleAmount, 0, 0, 0);
-            }, i);
-        }
-    }
-
-    public void legacyTrailsBlockCrack(Material material, Entity entity, int particleAmount, long duration, int durationIncrement){
-        for (int i = 0; i < duration; i+=durationIncrement){
-            Bukkit.getScheduler().runTaskLaterAsynchronously(plugin, () ->{
-                this.location = entity.getLocation();
-                try {
-                    legacyBlockCrack(particleAmount, material);
-                }catch(Exception e){}
             }, i);
         }
     }
