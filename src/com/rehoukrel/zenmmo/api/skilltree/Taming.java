@@ -14,6 +14,8 @@ import org.bukkit.entity.*;
 import org.bukkit.event.entity.EntityBreedEvent;
 import org.bukkit.event.entity.EntityTameEvent;
 import org.bukkit.event.player.PlayerExpChangeEvent;
+import org.bukkit.inventory.ItemStack;
+import org.bukkit.metadata.FixedMetadataValue;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -109,6 +111,8 @@ public class Taming extends SkillTree {
 
         if (horseTamer.getLevel() > 0 && animal.getType().equals(EntityType.HORSE)){
             int level = horseTamer.getLevel(), xpBonus = (int) Math.round(horseTamer.getAttribute().get("exp-bonus"));
+            ExperienceOrb orb = (ExperienceOrb) animal.getWorld().spawnEntity(animal.getLocation().add(0, 0.5, 0), EntityType.EXPERIENCE_ORB);
+            orb.setExperience(Math.round((xpBonus + level) / 2));
         }
         if (wolfMastery.getLevel() > 0 && animal.getType().equals(EntityType.WOLF)){
             int level = wolfMastery.getLevel();
