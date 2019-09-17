@@ -5,6 +5,7 @@ import com.rehoukrel.zenmmo.api.SkillTree;
 import com.rehoukrel.zenmmo.utils.menu.UneditableMenu;
 import org.bukkit.Bukkit;
 import org.bukkit.OfflinePlayer;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Projectile;
 import org.bukkit.event.EventHandler;
@@ -32,8 +33,8 @@ public class BasicEvent implements Listener{
         pds.remove(event.getPlayer());
     }
 
-    private PlayerData get(Player p){
-        PlayerData pd;
+    public static PlayerData get(Player p){
+        PlayerData pd = null;
         if (pds.containsKey(p)) {
             pd = pds.get(p);
             return pd;
@@ -50,7 +51,7 @@ public class BasicEvent implements Listener{
         }
         if (event.getWhoClicked() instanceof Player) {
             PlayerData playerData = get((Player) event.getWhoClicked());
-
+            if (playerData == null){return;}
             for (SkillTree tree : playerData.getSkillTree().values()){
                 tree.onPlayerCraft(event);
             }
@@ -63,6 +64,7 @@ public class BasicEvent implements Listener{
             return;
         }
         PlayerData pd = get(event.getPlayer());
+        if (pd == null){return;}
         for (SkillTree s : pd.getSkillTree().values()){
             s.onPlayerSprintToggle(event);
         }
@@ -74,6 +76,7 @@ public class BasicEvent implements Listener{
             return;
         }
         PlayerData pd = get(event.getPlayer());
+        if (pd == null){return;}
         for (SkillTree s : pd.getSkillTree().values()){
             s.onPlayerSneakToggle(event);
         }
@@ -87,6 +90,7 @@ public class BasicEvent implements Listener{
             }
             PlayerData pd = get((Player) event.getBreeder());
 
+            if (pd == null){return;}
             for (SkillTree tree : pd.getSkillTree().values()){
                 tree.onPlayerBreed(event);
             }
@@ -99,7 +103,7 @@ public class BasicEvent implements Listener{
             return;
         }
         PlayerData pd = get(event.getEnchanter());
-
+        if (pd == null){return;}
         for (SkillTree tree : pd.getSkillTree().values()){
             tree.onPlayerEnchant(event);
         }
@@ -111,16 +115,20 @@ public class BasicEvent implements Listener{
         if (proj.getShooter() instanceof Player){
             if (!cooldown.contains(proj.getShooter())){
                 PlayerData pd = get((Player) proj.getShooter());
-                for (SkillTree tree : pd.getSkillTree().values()){
-                    tree.onProjectileHit(event);
+                if (pd != null) {
+                    for (SkillTree tree : pd.getSkillTree().values()) {
+                        tree.onProjectileHit(event);
+                    }
                 }
             }
         }
         if (event.getHitEntity() instanceof Player){
             if (!cooldown.contains(event.getHitEntity())){
                 PlayerData pd = get((Player) event.getHitEntity());
-                for (SkillTree tree : pd.getSkillTree().values()){
-                    tree.onProjectileHit(event);
+                if (pd != null) {
+                    for (SkillTree tree : pd.getSkillTree().values()) {
+                        tree.onProjectileHit(event);
+                    }
                 }
             }
         }
@@ -133,6 +141,7 @@ public class BasicEvent implements Listener{
         }
         if (event.getEntity() instanceof Player) {
             PlayerData playerData = get((Player) event.getEntity());
+            if (playerData == null){return;}
             for (SkillTree tree : playerData.getSkillTree().values()){
                 tree.onEntityDropItem(event);
             }
@@ -145,6 +154,7 @@ public class BasicEvent implements Listener{
             return;
         }
         PlayerData playerData = get(event.getPlayer());
+        if (playerData == null){return;}
         for (SkillTree tree : playerData.getSkillTree().values()){
             tree.onPlayerFish(event);
         }
@@ -158,6 +168,7 @@ public class BasicEvent implements Listener{
             }
             Player tamer = (Player) event.getOwner();
             PlayerData playerData = get(tamer);
+            if (playerData == null){return;}
             for (SkillTree tree : playerData.getSkillTree().values()){
                 tree.onPlayerTame(event);
             }
@@ -171,6 +182,7 @@ public class BasicEvent implements Listener{
         }
         Player breaker = event.getPlayer();
         PlayerData playerData = get(breaker);
+        if (playerData == null){return;}
         for (SkillTree tree : playerData.getSkillTree().values()){
             tree.onBlockBreak(event);
         }
@@ -184,10 +196,11 @@ public class BasicEvent implements Listener{
             }
             try {
                 PlayerData playerData = get((Player) event.getEntity());
+                if (playerData == null){return;}
                 for (SkillTree tree : playerData.getSkillTree().values()) {
                     tree.onEntityBowShoot(event);
                 }
-            }catch(Exception e){}
+            }catch(Exception ignored){}
         }
     }
 
@@ -203,26 +216,32 @@ public class BasicEvent implements Listener{
             if (proj.getShooter() instanceof Player){
                 if (!cooldown.contains((Player) proj.getShooter())){
                     pda = get((Player) proj.getShooter());
-                    for (SkillTree tree : pda.getSkillTree().values()){
+                    if (pda != null) {
+                        for (SkillTree tree : pda.getSkillTree().values()) {
+                            tree.onEntityDamage(event);
+                        }
+                    }
+                }
+            }
+        }
+        if (event.getDamager() instanceof Player && event.getDamager().getType().equals(EntityType.PLAYER)){
+            if (!cooldown.contains((Player) event.getDamager())){
+                pda = get((Player) event.getDamager());
+                if (pda != null) {
+                    for (SkillTree tree : pda.getSkillTree().values()) {
                         tree.onEntityDamage(event);
                     }
                 }
             }
         }
-        if (event.getDamager() instanceof Player){
-            if (!cooldown.contains((Player) event.getDamager())){
-                pda = get((Player) event.getDamager());
-                for (SkillTree tree : pda.getSkillTree().values()){
-                    tree.onEntityDamage(event);
-                }
-            }
-        }
 
-        if (event.getEntity() instanceof Player){
+        if (event.getEntity() instanceof Player && event.getEntityType().equals(EntityType.PLAYER)){
             if (!cooldown.contains((Player) event.getEntity())){
                 pdv = get((Player) event.getEntity());
-                for (SkillTree tree : pdv.getSkillTree().values()){
-                    tree.onEntityDamage(event);
+                if (pdv != null) {
+                    for (SkillTree tree : pdv.getSkillTree().values()) {
+                        tree.onEntityDamage(event);
+                    }
                 }
             }
         }
@@ -236,6 +255,7 @@ public class BasicEvent implements Listener{
         if (event.getEntity() instanceof Player){
             if (!cooldown.contains(event.getEntity())){
                 PlayerData pd = get((Player) event.getEntity());
+                if (pd == null){return;}
                 for (SkillTree tree : pd.getSkillTree().values()){
                     tree.onDamage(event);
                 }
@@ -251,6 +271,7 @@ public class BasicEvent implements Listener{
         if (event.getEntity() instanceof Player){
             if (!cooldown.contains(event.getEntity())){
                 PlayerData pd = get((Player) event.getEntity());
+                if (pd == null){return;}
                 for (SkillTree tree : pd.getSkillTree().values()){
                     tree.onEntityHungerChange(event);
                 }
@@ -262,6 +283,7 @@ public class BasicEvent implements Listener{
     public void onPlayerExpChange(PlayerExpChangeEvent event){
         if (!cooldown.contains(event.getPlayer())) {
             PlayerData pd = get(event.getPlayer());
+            if (pd == null){return;}
             for (SkillTree tree : pd.getSkillTree().values()) {
                 tree.onPlayerExpChange(event);
             }
@@ -276,6 +298,7 @@ public class BasicEvent implements Listener{
         if (event.getEntity() instanceof Player){
             if (!cooldown.contains(event.getEntity())){
                 PlayerData pd = get((Player) event.getEntity());
+                if (pd == null){return;}
                 for (SkillTree tree : pd.getSkillTree().values()){
                     tree.onEntityPotionChange(event);
                 }
@@ -292,6 +315,7 @@ public class BasicEvent implements Listener{
         if (event.getTarget() instanceof Player){
             if (!cooldown.contains(event.getTarget())){
                 PlayerData playerData = get((Player) event.getTarget());
+                if (playerData == null){return;}
                 for (SkillTree st : playerData.getSkillTree().values()){
                     st.onEntityTarget(event);
                 }

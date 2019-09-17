@@ -34,6 +34,7 @@ public class ZenMMO extends JavaPlugin {
 
     private void loadCmd(){
         getCommand("zenmmo").setExecutor(new CmdZenMMO());
+        getCommand("zenmmo").setTabCompleter(new CmdZenMMO());
     }
 
     public void loadConfig(){
