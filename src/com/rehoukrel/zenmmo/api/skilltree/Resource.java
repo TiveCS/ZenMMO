@@ -77,7 +77,7 @@ public class Resource extends SkillTree {
         ItemStack hand = event.getPlayer().getInventory().getItemInMainHand();
         if (LOG.contains(block.getType()) || ORE.contains(block.getType())){
             ItemStack penaltyBlock = null, productBlock = null;
-            XMaterial xm = XMaterial.isNewVersion() ? XMaterial.fromString(block.getType().name()) : XMaterial.requestXMaterial(block.getType().name(), block.getData());
+            XMaterial xm = XMaterial.isNewVersion() ? XMaterial.matchXMaterial(block.getType().name()) : XMaterial.matchXMaterial(block.getType().name(), block.getData());
             String s = "";
             if (LOG.contains(block.getType()) && AXE.contains(hand.getType())) {
                 addExp();

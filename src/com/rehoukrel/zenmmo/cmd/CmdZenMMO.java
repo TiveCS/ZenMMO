@@ -7,6 +7,7 @@ import com.rehoukrel.zenmmo.api.SkillTree;
 import com.rehoukrel.zenmmo.event.BasicEvent;
 import com.rehoukrel.zenmmo.menu.MainMenu;
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
 import org.bukkit.OfflinePlayer;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -29,11 +30,30 @@ public class CmdZenMMO implements CommandExecutor, TabCompleter {
             if (commandSender instanceof Player){
                 Player p = (Player) commandSender;
                 if (strings.length == 0){
-                    PlayerData pd = new PlayerData(p);
+                    PlayerData pd = BasicEvent.get(p);
                     pd.openMenu();
                     return true;
                 }
                 if (strings.length >= 2){
+                    if (strings[1].length() > 0 && strings[0].equalsIgnoreCase("reset") && strings.length == 2){
+                        PlayerData pd = BasicEvent.get(p);
+                        if (pd.getSkillTree().containsKey(strings[1])){
+                            pd.getSkillTree().remove(strings[1]);
+
+                            pd.getConfigManager().input("skill-tree." + strings[1] + ".level", null);
+                            pd.getConfigManager().input("skill-tree." + strings[1] +".exp", null);
+                            pd.getConfigManager().input("skill-tree." + strings[1]+".skill", null);
+
+                            pd.getConfigManager().input("skill-tree." + strings[1], null);
+                            pd.getConfigManager().saveConfig();
+
+                            pd.loadData();
+                            p.sendMessage(ChatColor.translateAlternateColorCodes('&', "&7[ Skill tree " + strings[1] + " has been removed ]"));
+                        }else{
+                            p.sendMessage(ChatColor.translateAlternateColorCodes('&', "&7[ Skill tree not found! ]"));
+                        }
+                        return true;
+                    }
                     if (strings[0].equalsIgnoreCase("other")){
                         if (strings[1].length() > 0 && strings.length == 2){
                             OfflinePlayer op = Bukkit.getOfflinePlayer(strings[1]);
@@ -92,11 +112,19 @@ public class CmdZenMMO implements CommandExecutor, TabCompleter {
             if (strings.length == 1){
                 list.add("stats");
                 list.add("other");
+                list.add("reset");
                 if (commandSender.hasPermission("zenmmo.command.admin")){
                     list.add("admin");
                 }
                 return list;
             }else if (strings.length == 2){
+                if (strings[0].equalsIgnoreCase("reset")){
+                    PlayerData pd = BasicEvent.get((Player) commandSender);
+                    for (String ski : pd.getSkillTree().keySet()) {
+                        list.add(ski);
+                    }
+                    return list;
+                }
                 if (strings[0].equalsIgnoreCase("stats")) {
                     PlayerData pd = BasicEvent.get((Player) commandSender);
                     list.addAll(pd.getSkillTree().keySet());

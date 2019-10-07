@@ -133,7 +133,7 @@ public class MainMenu extends UneditableMenu {
             this.setItemMeta(meta);
         }});
 
-        map.put(4, new ItemStack(Material.SIGN){{
+        map.put(4, new ItemStack(XMaterial.OAK_SIGN.parseMaterial()){{
             ItemMeta meta = this.getItemMeta();
             meta.setDisplayName(ChatColor.AQUA + "" + target.getName() + "'s Stats");
             meta.setLore(DataConverter.colored(Arrays.asList(" ",
